@@ -1,5 +1,4 @@
-
-const WS_URL = "wss://cups-lives-aids-handles.trycloudflare.com/ws";
+const WS_URL = "wss://nexchat-backend-2cyf.onrender.com/ws";
 
 export function createWebSocket(
   username,
@@ -62,6 +61,3 @@ export function createWebSocket(
     },
   };
 }
-
-
-//const WS_URL = "ws://localhost:8000/ws";
