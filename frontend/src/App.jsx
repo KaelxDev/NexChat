@@ -421,8 +421,7 @@ function App() {
 
 
           <div className="input-hint">
-            Enter para enviar • Shift + Enter
-            para nova linha
+            Enter para enviar
           </div>
 
         </div>
