@@ -163,7 +163,7 @@ function App() {
 
         <section className="login">
 
-          <h1>💬 Poknex</h1>
+          <h1>💬 Pokinex</h1>
 
           <p>
             Entre no chat para conversar
