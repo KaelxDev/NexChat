@@ -1,2 +1,2 @@
-# NexChat
+# Poknex
 Communication Platform
