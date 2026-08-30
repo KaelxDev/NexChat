@@ -241,7 +241,7 @@ function App() {
           <div className="sidebar-header">
 
             <h2>
-              💬 Poknex
+              💬 Pokinex
             </h2>
 
             <p>
