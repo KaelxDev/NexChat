@@ -241,7 +241,7 @@ function App() {
           <div className="sidebar-header">
 
             <h2>
-              💬 NextChat
+              💬 Poknex
             </h2>
 
             <p>
