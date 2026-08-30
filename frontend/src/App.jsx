@@ -163,7 +163,7 @@ function App() {
 
         <section className="login">
 
-          <h1>💬 Realtime Chat</h1>
+          <h1>💬 NextChat</h1>
 
           <p>
             Entre no chat para conversar
@@ -241,7 +241,7 @@ function App() {
           <div className="sidebar-header">
 
             <h2>
-              💬 Realtime Chat
+              💬 NextChat
             </h2>
 
             <p>
