@@ -12,10 +12,19 @@ import './UIRefinement.css'
 import './AuthRefinement.css'
 import './MessageLayoutFinal.css'
 import './MessageGeometry.css'
+import './MobileUX.css'
+import './ReplyScrollFix.css'
+import './AutoMessageScroll.css'
+import MobileSidebar from './MobileSidebar.jsx'
+import AutoMessageScroll from './AutoMessageScroll.jsx'
 import AppEdit from './AppEdit.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AppEdit />
+    <MobileSidebar>
+      <AutoMessageScroll>
+        <AppEdit />
+      </AutoMessageScroll>
+    </MobileSidebar>
   </StrictMode>,
 )
