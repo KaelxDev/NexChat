@@ -1,5 +1,6 @@
-const API_HOST = window.location.hostname || "localhost";
-const API_URL = `http://${API_HOST}:8000/api/auth`;
+const DEFAULT_API_URL = "https://nexchat-backend-2cyf.onrender.com/api/auth";
+const LOCAL_API_URL = `http://${window.location.hostname}:8000/api/auth`;
+const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? LOCAL_API_URL : DEFAULT_API_URL);
 const TOKEN_KEY = "poknex_auth_token";
 
 function formatApiError(detail, fallback = "Erro na autenticação.") {
@@ -25,7 +26,7 @@ async function request(path, options = {}) {
     response = await fetch(`${API_URL}${path}`, { ...options, headers });
   } catch (error) {
     console.error("Falha de conexão com a API:", error);
-    throw new Error("Não foi possível conectar ao backend. Verifique se o servidor está rodando na porta 8000.");
+    throw new Error("Não foi possível conectar ao backend.");
   }
   let data = null;
   try { data = await response.json(); } catch {}
