@@ -1,2 +1,0 @@
-# Poknex
-Communication Platform
