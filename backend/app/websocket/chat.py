@@ -1,12 +1,23 @@
 from datetime import datetime, timezone
 from fastapi import WebSocket
 from app.database import delete_message,get_message,get_message_owner,save_message,toggle_reaction,update_message
+
 REACTIONS=("❤️","😂","😮","😢","😡","👍")
+
 class ConnectionManager:
  def __init__(self): self.active_connections={};self.processed_message_ids=set();self.message_owners={};self.sequence=0
+ def _has_user(self,user_id,exclude=None): return any(current["id"]==user_id and ws is not exclude for ws,current in self.active_connections.items())
  async def connect(self,websocket,user):
-  await websocket.accept();self.active_connections[websocket]=user;await self.broadcast({"type":"system","event":"user_joined","userId":user["id"],"username":user["username"],"displayName":user["displayName"],"avatar":user["avatar"],"message":f"{user['username']} entrou no chat.","timestamp":self.get_timestamp()});await self.send_users()
- def disconnect(self,websocket):return self.active_connections.pop(websocket,None)
+  await websocket.accept()
+  already_online=self._has_user(user["id"])
+  self.active_connections[websocket]=user
+  if not already_online:
+   await self.broadcast({"type":"system","event":"user_joined","userId":user["id"],"username":user["username"],"displayName":user["displayName"],"avatar":user["avatar"],"message":f"{user['username']} entrou no chat.","timestamp":self.get_timestamp()})
+  await self.send_users()
+ def disconnect(self,websocket):
+  user=self.active_connections.pop(websocket,None)
+  if not user:return None
+  return user if not self._has_user(user["id"]) else None
  def update_user(self,user):
   for ws,current in list(self.active_connections.items()):
    if current["id"]==user["id"]:self.active_connections[ws]=user
@@ -17,7 +28,11 @@ class ConnectionManager:
    try:await ws.send_json(data)
    except Exception:self.active_connections.pop(ws,None)
  async def send_users(self):
-  users=[{"id":u["id"],"username":u["username"],"displayName":u["displayName"],"avatar":u["avatar"],"status":u["status"],"online":True} for u in self.active_connections.values()];await self.broadcast({"type":"users","users":users,"timestamp":self.get_timestamp()})
+  users=[];seen=set()
+  for u in self.active_connections.values():
+   if u["id"] in seen:continue
+   seen.add(u["id"]);users.append({"id":u["id"],"username":u["username"],"displayName":u["displayName"],"avatar":u["avatar"],"status":u["status"],"online":True})
+  await self.broadcast({"type":"users","users":users,"timestamp":self.get_timestamp()})
  async def broadcast_profile_update(self,user):await self.broadcast({"type":"profile_updated","user":{"id":user["id"],"username":user["username"],"displayName":user["displayName"],"avatar":user["avatar"],"status":user["status"]},"timestamp":self.get_timestamp()});await self.send_users()
  async def send_message(self,user,message,message_id=None,sender=None,reply_to_message_id=None):
   user=self.get_user(sender) if sender else user
@@ -59,4 +74,5 @@ class ConnectionManager:
   self.sequence+=1;await self.broadcast({"type":"message_deleted","messageId":message_id,"userId":user["id"],"deletedAt":deleted_at,"deleted":True,"sequence":self.sequence});await sender.send_json({"type":"delete_ack","messageId":message_id})
  @staticmethod
  def get_timestamp():return datetime.now(timezone.utc).isoformat()
+
 manager=ConnectionManager()
