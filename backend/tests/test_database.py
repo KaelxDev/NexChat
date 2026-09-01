@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import sqlite3
 
 import app.database as database
 
@@ -33,6 +34,50 @@ def test_initialize_database_creates_and_records_migrations(tmp_path, monkeypatc
             for row in connection.execute("PRAGMA table_info(messages)").fetchall()
         }
         assert {"deleted_at", "reply_to_message_id"}.issubset(columns)
+    finally:
+        connection.close()
+
+
+def test_initialize_database_migrates_legacy_messages_table(tmp_path, monkeypatch):
+    db_path = tmp_path / "legacy.db"
+    monkeypatch.setattr(database, "SQLITE_DB_PATH", db_path)
+
+    connection = sqlite3.connect(db_path)
+    connection.executescript(
+        """
+        CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+            password_hash TEXT NOT NULL,
+            password_salt TEXT NOT NULL,
+            display_name TEXT NOT NULL,
+            avatar TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL
+        );
+        CREATE TABLE messages (
+            message_id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            edited_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """
+    )
+    connection.commit()
+    connection.close()
+
+    database.initialize_database()
+
+    connection = database.get_connection()
+    try:
+        columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(messages)").fetchall()
+        }
+        assert "deleted_at" in columns
+        assert "reply_to_message_id" in columns
     finally:
         connection.close()
 
