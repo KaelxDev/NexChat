@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from app.auth import get_user_from_token
 from app.database import close_db_pool, init_db_pool, initialize_database
 from app.routes.auth import router as auth_router
+from app.routes.messages import router as messages_router
 from app.websocket.chat import manager
 from app.websocket.schemas import (
     ChatMessageEvent,
@@ -52,6 +53,7 @@ app.add_middleware(
 )
 app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 app.include_router(auth_router)
+app.include_router(messages_router)
 
 
 @app.get("/")
