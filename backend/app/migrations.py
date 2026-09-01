@@ -149,35 +149,52 @@ def _migration_002_message_fields(connection, postgres: bool) -> None:
     )
 
 
+def _migration_003_persistent_avatars(connection, postgres: bool) -> None:
+    if postgres:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_avatars (
+                user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                content BYTEA NOT NULL,
+                content_type TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        return
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_avatars (
+            user_id INTEGER PRIMARY KEY,
+            content BLOB NOT NULL,
+            content_type TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+
+
 MIGRATIONS = (
     Migration(1, "baseline_schema", _migration_001_baseline),
     Migration(2, "message_metadata", _migration_002_message_fields),
+    Migration(3, "persistent_avatars", _migration_003_persistent_avatars),
 )
 
 
 def migrate(connection, postgres: bool) -> None:
-    if postgres:
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS schema_migrations (
-                version INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                applied_at TEXT NOT NULL
-            )
-            """
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+            version INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            applied_at TEXT NOT NULL
         )
-    else:
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS schema_migrations (
-                version INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                applied_at TEXT NOT NULL
-            )
-            """
-        )
-
+        """
+    )
     connection.commit()
+
     rows = connection.execute(
         "SELECT version FROM schema_migrations ORDER BY version"
     ).fetchall()
