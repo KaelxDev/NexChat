@@ -9,9 +9,14 @@ import {
   mergeServerHistory,
 } from "../utils/chat";
 
+function scopedStorageKey(baseKey, userKey) {
+  return userKey == null ? null : baseKey + ":user:" + userKey;
+}
+
 export function useChatHistory(userId) {
+  const userKey = userId == null ? null : String(userId);
   const [messages, setMessages] = useState([]);
-  const [offlineQueue, setOfflineQueue] = useState(() => loadJson(QUEUE_KEY));
+  const [offlineQueue, setOfflineQueue] = useState([]);
   const [historyBefore, setHistoryBefore] = useState(null);
   const [hasMoreHistory, setHasMoreHistory] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -19,31 +24,47 @@ export function useChatHistory(userId) {
   const historyLoadingRef = useRef(false);
   const cacheWriteTimerRef = useRef(null);
   const previousUserIdRef = useRef(null);
+  const messagesOwnerRef = useRef(null);
+  const queueOwnerRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(QUEUE_KEY);
+    } catch (error) {
+      console.error("Não foi possível remover o cache legado:", error);
+    }
+  }, []);
 
   useEffect(() => {
     clearTimeout(cacheWriteTimerRef.current);
+    if (userKey == null || messagesOwnerRef.current !== userKey) return undefined;
+
+    const cacheKey = scopedStorageKey(STORAGE_KEY, userKey);
     cacheWriteTimerRef.current = window.setTimeout(() => {
       try {
         const cacheable = messages
           .filter((item) => item?.type === "message")
           .slice(-LOCAL_CACHE_LIMIT);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheable));
+        localStorage.setItem(cacheKey, JSON.stringify(cacheable));
       } catch (error) {
         console.error("Não foi possível atualizar o cache local:", error);
       }
     }, 200);
 
     return () => window.clearTimeout(cacheWriteTimerRef.current);
-  }, [messages]);
+  }, [messages, userKey]);
 
   useEffect(() => {
+    if (userKey == null || queueOwnerRef.current !== userKey) return;
+
+    const queueKey = scopedStorageKey(QUEUE_KEY, userKey);
     try {
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(offlineQueue));
+      localStorage.setItem(queueKey, JSON.stringify(offlineQueue));
     } catch (error) {
       console.error("Não foi possível atualizar a fila offline:", error);
     }
-  }, [offlineQueue]);
-
+  }, [offlineQueue, userKey]);
   async function loadMessageHistory(before = null, preserveScroll = false) {
     if (historyLoadingRef.current) return;
     if (before && !hasMoreHistory) return;
@@ -76,20 +97,24 @@ export function useChatHistory(userId) {
   }
 
   useEffect(() => {
-    if (previousUserIdRef.current === userId) return;
-    previousUserIdRef.current = userId;
+    if (previousUserIdRef.current === userKey) return;
+    previousUserIdRef.current = userKey;
     setHistoryBefore(null);
     setHasMoreHistory(false);
 
-    if (!userId) {
+    messagesOwnerRef.current = userKey;
+    queueOwnerRef.current = userKey;
+
+    if (userKey == null) {
       setMessages([]);
+      setOfflineQueue([]);
       return;
     }
 
-    setMessages(loadJson(STORAGE_KEY));
+    setMessages(loadJson(scopedStorageKey(STORAGE_KEY, userKey)));
+    setOfflineQueue(loadJson(scopedStorageKey(QUEUE_KEY, userKey)));
     void loadMessageHistory();
-  }, [userId]);
-
+  }, [userKey]);
   function handleMessagesScroll(event) {
     if (event.currentTarget.scrollTop > 80) return;
     if (!hasMoreHistory || historyLoadingRef.current || !historyBefore) return;
@@ -101,7 +126,10 @@ export function useChatHistory(userId) {
     setHistoryBefore(null);
     setHasMoreHistory(false);
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      const cacheKey = scopedStorageKey(STORAGE_KEY, userKey);
+      if (!cacheKey) return;
+      try {
+        localStorage.removeItem(cacheKey);
     } catch (error) {
       console.error("Não foi possível limpar o cache local:", error);
     }
