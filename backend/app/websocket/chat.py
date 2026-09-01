@@ -43,6 +43,13 @@ class ConnectionManager:
             expired_id = self._processed_message_order.popleft()
             self.processed_message_ids.discard(expired_id)
 
+    def _forget_processed_message(self, message_id):
+        self.processed_message_ids.discard(message_id)
+        try:
+            self._processed_message_order.remove(message_id)
+        except ValueError:
+            pass
+
     def _cache_message_owner(self, message_id, owner_id):
         if message_id not in self.message_owners:
             self._message_owner_order.append(message_id)
@@ -52,6 +59,13 @@ class ConnectionManager:
         while len(self._message_owner_order) > MAX_MESSAGE_OWNERS:
             expired_id = self._message_owner_order.popleft()
             self.message_owners.pop(expired_id, None)
+
+    def _forget_message_owner(self, message_id):
+        self.message_owners.pop(message_id, None)
+        try:
+            self._message_owner_order.remove(message_id)
+        except ValueError:
+            pass
 
     async def connect(self, websocket, user):
         await websocket.accept()
@@ -81,10 +95,12 @@ class ConnectionManager:
         return user if not self._has_user(user["id"]) else None
 
     def update_user(self, user):
+        updated = False
         for websocket, current in list(self.active_connections.items()):
             if current["id"] == user["id"]:
                 self.active_connections[websocket] = user
-        return True
+                updated = True
+        return updated
 
     def get_user(self, websocket):
         return self.active_connections.get(websocket)
@@ -174,23 +190,23 @@ class ConnectionManager:
                     "deleted": bool(original["deleted_at"]),
                 }
 
-        if message_id and message_id in self.processed_message_ids:
-            if sender:
-                await sender.send_json({"type": "ack", "messageId": message_id})
-            return
-
         timestamp = self.get_timestamp()
         if message_id:
             self._remember_processed_message(message_id)
+            try:
+                await to_thread.run_sync(
+                    save_message,
+                    message_id,
+                    user["id"],
+                    message,
+                    timestamp,
+                    reply_to_message_id,
+                )
+            except Exception:
+                self._forget_processed_message(message_id)
+                self._forget_message_owner(message_id)
+                raise
             self._cache_message_owner(message_id, user["id"])
-            await to_thread.run_sync(
-                save_message,
-                message_id,
-                user["id"],
-                message,
-                timestamp,
-                reply_to_message_id,
-            )
 
         self.sequence += 1
         event = {
@@ -379,11 +395,7 @@ class ConnectionManager:
             )
             return
 
-        self.message_owners.pop(message_id, None)
-        try:
-            self._message_owner_order.remove(message_id)
-        except ValueError:
-            pass
+        self._forget_message_owner(message_id)
 
         self.sequence += 1
         await self.broadcast(
