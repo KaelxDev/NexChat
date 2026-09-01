@@ -1,13 +1,15 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 import json
 
+from anyio import to_thread
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 
 from app.auth import get_user_from_token
-from app.database import initialize_database
+from app.database import close_db_pool, init_db_pool, initialize_database
 from app.routes.auth import router as auth_router
 from app.websocket.chat import manager
 from app.websocket.schemas import (
@@ -17,9 +19,6 @@ from app.websocket.schemas import (
     ReactionEvent,
 )
 
-
-initialize_database()
-
 APP_DIR = Path(__file__).resolve().parent
 MEDIA_DIR = APP_DIR / "uploads"
 AVATAR_DIR = MEDIA_DIR / "avatars"
@@ -27,7 +26,18 @@ AVATAR_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_WEBSOCKET_PAYLOAD = 16 * 1024
 
-app = FastAPI(title="Poknex API", version="2.0.0")
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    await to_thread.run_sync(init_db_pool)
+    await to_thread.run_sync(initialize_database)
+    try:
+        yield
+    finally:
+        await to_thread.run_sync(close_db_pool)
+
+
+app = FastAPI(title="NexChat API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -46,15 +56,11 @@ app.include_router(auth_router)
 
 @app.get("/")
 async def root():
-    return {"message": "Poknex API", "status": "online"}
+    return {"message": "NexChat API", "status": "online"}
 
 
 def _websocket_token(websocket: WebSocket) -> str | None:
-    """Keep compatibility with the current frontend protocol.
-
-    Cookie support is preferred when available, while the current query-token
-    flow remains accepted so existing clients do not break.
-    """
+    """Keep compatibility with the current frontend protocol."""
     return websocket.cookies.get("session") or websocket.query_params.get("token")
 
 
@@ -85,7 +91,7 @@ async def _send_validation_error(
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     token = _websocket_token(websocket)
-    user = get_user_from_token(token)
+    user = await to_thread.run_sync(get_user_from_token, token)
 
     if not user:
         await websocket.close(code=1008, reason="Authentication required")
@@ -162,12 +168,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     })
                     continue
 
-                await manager.edit_message(
-                    user,
-                    event.messageId,
-                    message,
-                    websocket,
-                )
+                await manager.edit_message(user, event.messageId, message, websocket)
                 continue
 
             if event_type == "delete_message":
@@ -177,11 +178,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await _send_validation_error(websocket, "delete_message", error)
                     continue
 
-                await manager.delete_message(
-                    user,
-                    event.messageId,
-                    websocket,
-                )
+                await manager.delete_message(user, event.messageId, websocket)
                 continue
 
             if event_type == "reaction":
