@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createWebSocket } from "../services/websocket";
 
-export function useChatConnection(token, { onMessage, onOpen } = {}) {
+export function useChatConnection(enabled, { onMessage, onOpen } = {}) {
   const socketRef = useRef(null);
   const callbackRef = useRef({ onMessage, onOpen });
   const generationRef = useRef(0);
-  const activeRef = useRef(Boolean(token));
+  const activeRef = useRef(Boolean(enabled));
   const [connected, setConnected] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState(token ? "connecting" : "disconnected");
+  const [connectionStatus, setConnectionStatus] = useState(enabled ? "connecting" : "disconnected");
   const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const [reconnectSeconds, setReconnectSeconds] = useState(0);
 
@@ -16,11 +16,11 @@ export function useChatConnection(token, { onMessage, onOpen } = {}) {
   }, [onMessage, onOpen]);
 
   useEffect(() => {
-    activeRef.current = Boolean(token);
-  }, [token]);
+    activeRef.current = Boolean(enabled);
+  }, [enabled]);
 
   useEffect(() => {
-    if (!token) {
+    if (!enabled) {
       socketRef.current?.close();
       socketRef.current = null;
       setConnected(false);
@@ -38,7 +38,7 @@ export function useChatConnection(token, { onMessage, onOpen } = {}) {
     setReconnectAttempt(0);
     setReconnectSeconds(0);
 
-    const socket = createWebSocket(token, {
+    const socket = createWebSocket("", {
       onOpen() {
         if (disposed || generation !== generationRef.current) return;
         setConnected(true);
@@ -74,7 +74,7 @@ export function useChatConnection(token, { onMessage, onOpen } = {}) {
       ++generationRef.current;
       socket.close();
     };
-  }, [token]);
+  }, [enabled]);
 
   useEffect(() => {
     if (connectionStatus !== "reconnecting") return undefined;
