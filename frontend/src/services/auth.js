@@ -23,7 +23,11 @@ async function request(path, options = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
   let response;
   try {
-    response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
   } catch (error) {
     console.error("Falha de conexão com a API:", error);
     throw new Error("Não foi possível conectar ao backend.");
@@ -41,14 +45,23 @@ export function hasToken() { return !!getToken(); }
 
 export async function register(username, password) {
   const data = await request("/register", { method: "POST", body: JSON.stringify({ username, password }) });
-  saveToken(data.token); return data.user;
+  saveToken(data.token);
+  return data.user;
 }
+
 export async function login(username, password) {
   const data = await request("/login", { method: "POST", body: JSON.stringify({ username, password }) });
-  saveToken(data.token); return data.user;
+  saveToken(data.token);
+  return data.user;
 }
-export async function me() { return (await request("/me")).user; }
-export async function getPublicProfile(userId) { return (await request(`/users/${encodeURIComponent(userId)}`)).user; }
+
+export async function me() {
+  return (await request("/me")).user;
+}
+
+export async function getPublicProfile(userId) {
+  return (await request(`/users/${encodeURIComponent(userId)}`)).user;
+}
 
 export async function getMessageHistory(limit = 50, before = null) {
   const params = new URLSearchParams({ limit: String(limit) });
@@ -58,7 +71,10 @@ export async function getMessageHistory(limit = 50, before = null) {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
   let response;
   try {
-    response = await fetch(`${historyUrl}?${params.toString()}`, { headers });
+    response = await fetch(`${historyUrl}?${params.toString()}`, {
+      headers,
+      credentials: "include",
+    });
   } catch (error) {
     console.error("Falha ao carregar histórico:", error);
     throw new Error("Não foi possível carregar o histórico.");
@@ -76,7 +92,12 @@ export async function uploadAvatar(file) {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
   let response;
   try {
-    response = await fetch(`${API_URL}/avatar`, { method: "POST", headers, body: formData });
+    response = await fetch(`${API_URL}/avatar`, {
+      method: "POST",
+      headers,
+      body: formData,
+      credentials: "include",
+    });
   } catch (error) {
     console.error("Falha ao enviar avatar:", error);
     throw new Error("Não foi possível enviar a imagem ao backend.");
@@ -88,6 +109,21 @@ export async function uploadAvatar(file) {
 }
 
 export async function updateProfile(profile) {
-  return (await request("/profile", { method: "PATCH", body: JSON.stringify({ username: profile.username, displayName: profile.displayName, avatar: profile.avatar || "", status: profile.status || "" }) })).user;
+  return (await request("/profile", {
+    method: "PATCH",
+    body: JSON.stringify({
+      username: profile.username,
+      displayName: profile.displayName,
+      avatar: profile.avatar || "",
+      status: profile.status || "",
+    }),
+  })).user;
 }
-export async function logout() { try { await request("/logout", { method: "POST" }); } finally { clearToken(); } }
+
+export async function logout() {
+  try {
+    await request("/logout", { method: "POST" });
+  } finally {
+    clearToken();
+  }
+}
