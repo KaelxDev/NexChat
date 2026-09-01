@@ -10,7 +10,7 @@ import {
 } from "../utils/chat";
 
 export function useChatHistory(userId) {
-  const [messages, setMessages] = useState(() => loadJson(STORAGE_KEY));
+  const [messages, setMessages] = useState([]);
   const [offlineQueue, setOfflineQueue] = useState(() => loadJson(QUEUE_KEY));
   const [historyBefore, setHistoryBefore] = useState(null);
   const [hasMoreHistory, setHasMoreHistory] = useState(false);
@@ -18,13 +18,15 @@ export function useChatHistory(userId) {
   const messagesRef = useRef(null);
   const historyLoadingRef = useRef(false);
   const cacheWriteTimerRef = useRef(null);
-  const initialHistoryLoadedRef = useRef(false);
+  const previousUserIdRef = useRef(null);
 
   useEffect(() => {
     clearTimeout(cacheWriteTimerRef.current);
     cacheWriteTimerRef.current = window.setTimeout(() => {
       try {
-        const cacheable = messages.filter((item) => item?.type === "message").slice(-LOCAL_CACHE_LIMIT);
+        const cacheable = messages
+          .filter((item) => item?.type === "message")
+          .slice(-LOCAL_CACHE_LIMIT);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheable));
       } catch (error) {
         console.error("Não foi possível atualizar o cache local:", error);
@@ -62,7 +64,8 @@ export function useChatHistory(userId) {
 
       requestAnimationFrame(() => {
         if (!container || !preserveScroll) return;
-        container.scrollTop = container.scrollHeight - previousScrollHeight + previousScrollTop;
+        container.scrollTop =
+          container.scrollHeight - previousScrollHeight + previousScrollTop;
       });
     } catch (error) {
       console.error("Não foi possível carregar o histórico:", error);
@@ -73,8 +76,17 @@ export function useChatHistory(userId) {
   }
 
   useEffect(() => {
-    if (!userId || initialHistoryLoadedRef.current) return;
-    initialHistoryLoadedRef.current = true;
+    if (previousUserIdRef.current === userId) return;
+    previousUserIdRef.current = userId;
+    setHistoryBefore(null);
+    setHasMoreHistory(false);
+
+    if (!userId) {
+      setMessages([]);
+      return;
+    }
+
+    setMessages(loadJson(STORAGE_KEY));
     void loadMessageHistory();
   }, [userId]);
 
