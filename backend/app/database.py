@@ -2,7 +2,6 @@ from collections.abc import Callable
 from pathlib import Path
 import os
 import sqlite3
-from typing import Any
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 BASE_DIR = Path(__file__).resolve().parent.parent
