@@ -29,8 +29,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements-dev.txt
 
-      - name: Lint tests and WebSocket schemas
-        run: ruff check tests app/websocket/schemas.py
+      - name: Lint backend
+        run: ruff check app tests
 
       - name: Run tests
         run: pytest
