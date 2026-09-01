@@ -12,6 +12,7 @@ from app.auth import get_user_from_token
 from app.database import close_db_pool, init_db_pool, initialize_database
 from app.routes.auth import router as auth_router
 from app.routes.messages import router as messages_router
+from app.security import ALLOWED_ORIGINS, is_allowed_origin
 from app.websocket.chat import manager
 from app.websocket.schemas import (
     ChatMessageEvent,
@@ -41,15 +42,10 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="NexChat API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://nexchat-chat.vercel.app",
-    ],
-    allow_origin_regex=r"^https://[a-zA-Z0-9-]+\.vercel\.app$|^https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$",
+    allow_origins=list(ALLOWED_ORIGINS),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 app.include_router(auth_router)
@@ -62,8 +58,17 @@ async def root():
 
 
 def _websocket_token(websocket: WebSocket) -> str | None:
-    """Keep compatibility with the current frontend protocol."""
-    return websocket.cookies.get("session") or websocket.query_params.get("token")
+    """Authenticate browser WebSockets with the HttpOnly session cookie."""
+    return websocket.cookies.get("session")
+
+
+async def _validate_websocket_origin(websocket: WebSocket) -> bool:
+    origin = websocket.headers.get("origin")
+    if is_allowed_origin(origin):
+        return True
+
+    await websocket.close(code=1008, reason="Origin not allowed")
+    return False
 
 
 async def _send_validation_error(
@@ -83,15 +88,20 @@ async def _send_validation_error(
     }
     message = messages.get(error_type, "Dados do evento inválidos.")
 
-    await websocket.send_json({
-        "type": "error",
-        "action": action,
-        "message": message,
-    })
+    await websocket.send_json(
+        {
+            "type": "error",
+            "action": action,
+            "message": message,
+        }
+    )
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    if not await _validate_websocket_origin(websocket):
+        return
+
     token = _websocket_token(websocket)
     user = await to_thread.run_sync(get_user_from_token, token)
 
@@ -106,29 +116,35 @@ async def websocket_endpoint(websocket: WebSocket):
             raw_data = await websocket.receive_text()
 
             if len(raw_data.encode("utf-8")) > MAX_WEBSOCKET_PAYLOAD:
-                await websocket.send_json({
-                    "type": "error",
-                    "action": "payload",
-                    "message": "Evento muito grande.",
-                })
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "action": "payload",
+                        "message": "Evento muito grande.",
+                    }
+                )
                 continue
 
             try:
                 data = json.loads(raw_data)
             except json.JSONDecodeError:
-                await websocket.send_json({
-                    "type": "error",
-                    "action": "payload",
-                    "message": "JSON inválido.",
-                })
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "action": "payload",
+                        "message": "JSON inválido.",
+                    }
+                )
                 continue
 
             if not isinstance(data, dict):
-                await websocket.send_json({
-                    "type": "error",
-                    "action": "payload",
-                    "message": "O evento deve ser um objeto JSON.",
-                })
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "action": "payload",
+                        "message": "O evento deve ser um objeto JSON.",
+                    }
+                )
                 continue
 
             event_type = data.get("type", "message")
@@ -162,12 +178,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 message = event.message.strip()
                 if not message:
-                    await websocket.send_json({
-                        "type": "error",
-                        "action": "edit_message",
-                        "messageId": event.messageId,
-                        "message": "A mensagem não pode ficar vazia.",
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "action": "edit_message",
+                            "messageId": event.messageId,
+                            "message": "A mensagem não pode ficar vazia.",
+                        }
+                    )
                     continue
 
                 await manager.edit_message(user, event.messageId, message, websocket)
@@ -198,23 +216,27 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
                 continue
 
-            await websocket.send_json({
-                "type": "error",
-                "action": "unknown_event",
-                "message": "Tipo de evento não suportado.",
-            })
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "action": "unknown_event",
+                    "message": "Tipo de evento não suportado.",
+                }
+            )
 
     except WebSocketDisconnect:
         disconnected_user = manager.disconnect(websocket)
         if disconnected_user:
-            await manager.broadcast({
-                "type": "system",
-                "event": "user_left",
-                "userId": disconnected_user["id"],
-                "username": disconnected_user["username"],
-                "displayName": disconnected_user["displayName"],
-                "avatar": disconnected_user["avatar"],
-                "message": f"{disconnected_user['username']} saiu do chat.",
-                "timestamp": manager.get_timestamp(),
-            })
+            await manager.broadcast(
+                {
+                    "type": "system",
+                    "event": "user_left",
+                    "userId": disconnected_user["id"],
+                    "username": disconnected_user["username"],
+                    "displayName": disconnected_user["displayName"],
+                    "avatar": disconnected_user["avatar"],
+                    "message": f"{disconnected_user['username']} saiu do chat.",
+                    "timestamp": manager.get_timestamp(),
+                }
+            )
             await manager.send_users()
