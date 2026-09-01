@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header, HTTPException, Query, status
 
 from app.auth import get_user_from_token
-from app.database import get_message_history
+from app.message_history import get_message_history
 
 router = APIRouter(prefix="/api/messages", tags=["messages"])
 
