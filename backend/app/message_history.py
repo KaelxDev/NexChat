@@ -25,6 +25,7 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
                 u.display_name,
                 u.avatar,
                 r.message_id AS reply_message_id,
+                r.user_id AS reply_user_id,
                 r.message AS reply_message,
                 r.deleted_at AS reply_deleted_at,
                 ru.username AS reply_username,
@@ -89,7 +90,7 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
             if row["reply_message_id"]:
                 item["replyTo"] = {
                     "messageId": row["reply_message_id"],
-                    "userId": row["reply_message_id"],
+                    "userId": row["reply_user_id"],
                     "username": row["reply_username"],
                     "displayName": row["reply_display_name"],
                     "avatar": row["reply_avatar"],
