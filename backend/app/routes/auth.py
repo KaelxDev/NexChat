@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from anyio import to_thread
-from fastapi import APIRouter, File, Header, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, File, Header, HTTPException, Request, Response, UploadFile, status
 from pydantic import BaseModel, Field
 
 from app.auth import (
@@ -117,6 +117,7 @@ def avatar(user_id: int):
 
 @router.post("/avatar")
 async def upload_avatar(
+    request: Request,
     file: UploadFile = File(...),
     authorization: str | None = Header(default=None),
 ):
@@ -148,7 +149,8 @@ async def upload_avatar(
         content,
         content_type,
     )
-    return {"avatar": avatar_path}
+    avatar_url = str(request.base_url).rstrip("/") + avatar_path
+    return {"avatar": avatar_url}
 
 
 @router.patch("/profile")
