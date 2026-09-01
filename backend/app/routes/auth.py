@@ -1,8 +1,7 @@
 from pathlib import Path
-import secrets
 
 from anyio import to_thread
-from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, File, Header, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel, Field
 
 from app.auth import (
@@ -14,6 +13,7 @@ from app.auth import (
     get_user_from_token,
     update_profile,
 )
+from app.avatar_storage import get_avatar, store_avatar
 from app.websocket.chat import manager
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -36,7 +36,7 @@ class Credentials(BaseModel):
 class ProfileUpdate(BaseModel):
     username: str = Field(min_length=3, max_length=20)
     displayName: str = Field(min_length=1, max_length=30)
-    avatar: str = ""
+    avatar: str = Field(default="", max_length=500)
     status: str = Field(default="", max_length=60)
 
 
@@ -98,15 +98,32 @@ def public_user(user_id: int, authorization: str | None = Header(default=None)):
     return {"user": user}
 
 
+@router.get("/avatar/{user_id}")
+def avatar(user_id: int):
+    stored = get_avatar(user_id)
+    if stored:
+        content, content_type = stored
+        return Response(
+            content=content,
+            media_type=content_type,
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Avatar não encontrado.",
+    )
+
+
 @router.post("/avatar")
 async def upload_avatar(
-    request: Request,
     file: UploadFile = File(...),
     authorization: str | None = Header(default=None),
 ):
     _, user = await to_thread.run_sync(require_user, authorization)
 
-    extension = ALLOWED_IMAGE_TYPES.get(file.content_type or "")
+    content_type = file.content_type or ""
+    extension = ALLOWED_IMAGE_TYPES.get(content_type)
     if not extension:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -125,12 +142,13 @@ async def upload_avatar(
             detail="A imagem está vazia.",
         )
 
-    filename = f"{user['id']}-{secrets.token_hex(8)}{extension}"
-    destination = AVATAR_DIR / filename
-    await to_thread.run_sync(destination.write_bytes, content)
-
-    avatar_url = str(request.base_url).rstrip("/") + f"/media/avatars/{filename}"
-    return {"avatar": avatar_url}
+    avatar_path = await to_thread.run_sync(
+        store_avatar,
+        user["id"],
+        content,
+        content_type,
+    )
+    return {"avatar": avatar_path}
 
 
 @router.patch("/profile")
