@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { clearToken, getPublicProfile, getToken, login, me, register, updateProfile, uploadAvatar } from "./services/auth";
+import { clearToken, getMessageHistory, getPublicProfile, getToken, login, me, register, updateProfile, uploadAvatar } from "./services/auth";
 import { createWebSocket } from "./services/websocket";
 import "./App.css";
 import "./Profile.css";
@@ -10,6 +10,8 @@ import "./MessageReactions.css";
 const STORAGE_KEY = "poknex_messages";
 const QUEUE_KEY = "poknex_offline_queue";
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
+const HISTORY_PAGE_SIZE = 50;
+const LOCAL_CACHE_LIMIT = 200;
 const REACTION_OPTIONS = ["❤️", "😂", "😮", "😢", "😡", "👍"];
 
 function formatTime(timestamp) {
@@ -24,6 +26,38 @@ function loadJson(key) {
   } catch {
     return [];
   }
+}
+
+function mergeServerHistory(current, incoming) {
+  const messageMap = new Map();
+  const systemMessages = [];
+
+  for (const item of current) {
+    if (item?.type === "system") {
+      systemMessages.push(item);
+      continue;
+    }
+    if (item?.type === "message" && item.messageId) messageMap.set(item.messageId, item);
+  }
+
+  for (const item of incoming) {
+    if (!item?.messageId) continue;
+    const previous = messageMap.get(item.messageId);
+    messageMap.set(item.messageId, {
+      ...previous,
+      ...item,
+      offline: false,
+      deliveryStatus: "sent",
+      editPending: false,
+      deletePending: false,
+    });
+  }
+
+  return [...systemMessages, ...messageMap.values()].sort((a, b) => {
+    const timeDiff = new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime();
+    if (timeDiff !== 0) return timeDiff;
+    return String(a.messageId || "").localeCompare(String(b.messageId || ""));
+  });
 }
 
 function makeId() {
@@ -109,6 +143,9 @@ export default function AppEdit() {
   const [reconnectSeconds, setReconnectSeconds] = useState(0);
   const [messages, setMessages] = useState(() => loadJson(STORAGE_KEY));
   const [offlineQueue, setOfflineQueue] = useState(() => loadJson(QUEUE_KEY));
+  const [historyBefore, setHistoryBefore] = useState(null);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [profilesById, setProfilesById] = useState({});
   const [messageInput, setMessageInput] = useState("");
@@ -132,6 +169,9 @@ export default function AppEdit() {
   const avatarFileRef = useRef(null);
   const longPressRef = useRef(null);
   const profileFetchesRef = useRef(new Set());
+  const messagesRef = useRef(null);
+  const historyLoadingRef = useRef(false);
+  const cacheWriteTimerRef = useRef(null);
 
   useEffect(() => {
     queueRef.current = offlineQueue;
@@ -139,7 +179,15 @@ export default function AppEdit() {
   }, [offlineQueue]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    clearTimeout(cacheWriteTimerRef.current);
+    cacheWriteTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-LOCAL_CACHE_LIMIT)));
+      } catch (error) {
+        console.error("Não foi possível atualizar o cache local:", error);
+      }
+    }, 200);
+    return () => clearTimeout(cacheWriteTimerRef.current);
   }, [messages]);
 
   useEffect(() => {
@@ -182,6 +230,11 @@ export default function AppEdit() {
     }
   }, [messages, users, profilesById]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    loadMessageHistory(null, false);
+  }, [user?.id]);
+
   function syncProfile(nextUser) {
     setUser(nextUser);
     setProfile(nextUser);
@@ -199,6 +252,42 @@ export default function AppEdit() {
       next[index] = { ...next[index], ...incoming };
       return next;
     });
+  }
+
+  async function loadMessageHistory(before = null, preserveScroll = false) {
+    if (historyLoadingRef.current) return;
+    if (before && !hasMoreHistory) return;
+
+    historyLoadingRef.current = true;
+    setHistoryLoading(true);
+
+    const container = messagesRef.current;
+    const previousScrollHeight = container?.scrollHeight || 0;
+    const previousScrollTop = container?.scrollTop || 0;
+
+    try {
+      const data = await getMessageHistory(HISTORY_PAGE_SIZE, before);
+      const incoming = Array.isArray(data?.messages) ? data.messages : [];
+      setMessages((current) => mergeServerHistory(current, incoming));
+      setHistoryBefore(data?.nextBefore || null);
+      setHasMoreHistory(Boolean(data?.hasMore && data?.nextBefore));
+
+      requestAnimationFrame(() => {
+        if (!container || !preserveScroll) return;
+        container.scrollTop = container.scrollHeight - previousScrollHeight + previousScrollTop;
+      });
+    } catch (error) {
+      console.error("Não foi possível carregar o histórico:", error);
+    } finally {
+      historyLoadingRef.current = false;
+      setHistoryLoading(false);
+    }
+  }
+
+  function handleMessagesScroll(event) {
+    if (event.currentTarget.scrollTop > 80) return;
+    if (!hasMoreHistory || historyLoadingRef.current || !historyBefore) return;
+    loadMessageHistory(historyBefore, true);
   }
 
   function flushQueue() {
@@ -511,6 +600,8 @@ export default function AppEdit() {
     setContextMenu(null);
     setReactionPickerMessageId(null);
     setReplyingTo(null);
+    setHistoryBefore(null);
+    setHasMoreHistory(false);
   }
 
   function clearLocalHistory() {
@@ -600,7 +691,8 @@ export default function AppEdit() {
             <button className="logout" onClick={handleLogout}>Sair</button>
           </header>
 
-          <div className="messages">
+          <div className="messages" ref={messagesRef} onScroll={handleMessagesScroll}>
+            {historyLoading && <div className="history-loading" role="status" style={{ padding: "8px 0", textAlign: "center", opacity: 0.7, fontSize: "13px" }}>Carregando mensagens anteriores...</div>}
             {messages.map((message, index) => {
               if (message.type === "system") return <div className="system-message" key={`system-${index}`}>{message.message}<span> • {formatTime(message.timestamp)}</span></div>;
               if (message.type !== "message") return null;
