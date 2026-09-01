@@ -125,11 +125,10 @@ export function useChatHistory(userId) {
     setMessages([]);
     setHistoryBefore(null);
     setHasMoreHistory(false);
+    const cacheKey = scopedStorageKey(STORAGE_KEY, userKey);
+    if (!cacheKey) return;
     try {
-      const cacheKey = scopedStorageKey(STORAGE_KEY, userKey);
-      if (!cacheKey) return;
-      try {
-        localStorage.removeItem(cacheKey);
+      localStorage.removeItem(cacheKey);
     } catch (error) {
       console.error("Não foi possível limpar o cache local:", error);
     }
