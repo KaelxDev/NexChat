@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { clearToken, getToken, me } from "../services/auth";
+import { clearToken, me } from "../services/auth";
 
 export function useAuthSession() {
   const [authChecked, setAuthChecked] = useState(false);
@@ -15,11 +15,6 @@ export function useAuthSession() {
     let cancelled = false;
 
     async function restore() {
-      if (!getToken()) {
-        setAuthChecked(true);
-        return;
-      }
-
       try {
         const currentUser = await me();
         if (cancelled) return;
