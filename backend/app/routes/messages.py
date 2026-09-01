@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Header, HTTPException, Query, Request, status
+from fastapi import APIRouter, Header, Query, Request
 
-from app.auth import get_user_from_token
-from app.routes.auth import require_user
 from app.message_history import get_message_history
+from app.routes.auth import require_user
 
 router = APIRouter(prefix="/api/messages", tags=["messages"])
 
