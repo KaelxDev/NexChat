@@ -45,18 +45,21 @@ export function hasToken() { return !!getToken(); }
 
 export async function register(username, password) {
   const data = await request("/register", { method: "POST", body: JSON.stringify({ username, password }) });
-  saveToken(data.token);
+  clearToken();
   return data.user;
 }
 
 export async function login(username, password) {
   const data = await request("/login", { method: "POST", body: JSON.stringify({ username, password }) });
-  saveToken(data.token);
+  clearToken();
   return data.user;
 }
 
 export async function me() {
-  return (await request("/me")).user;
+  const hasLegacyToken = !!getToken();
+  const user = (await request("/me")).user;
+  if (hasLegacyToken) clearToken();
+  return user;
 }
 
 export async function getPublicProfile(userId) {
