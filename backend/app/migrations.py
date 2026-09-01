@@ -176,10 +176,17 @@ def _migration_003_persistent_avatars(connection, postgres: bool) -> None:
     )
 
 
+def _migration_004_message_history_index(connection, postgres: bool) -> None:
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at)"
+    )
+
+
 MIGRATIONS = (
     Migration(1, "baseline_schema", _migration_001_baseline),
     Migration(2, "message_metadata", _migration_002_message_fields),
     Migration(3, "persistent_avatars", _migration_003_persistent_avatars),
+    Migration(4, "message_history_index", _migration_004_message_history_index),
 )
 
 
