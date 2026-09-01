@@ -50,6 +50,25 @@ export async function login(username, password) {
 export async function me() { return (await request("/me")).user; }
 export async function getPublicProfile(userId) { return (await request(`/users/${encodeURIComponent(userId)}`)).user; }
 
+export async function getMessageHistory(limit = 50, before = null) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (before) params.set("before", before);
+  const historyUrl = API_URL.replace(/\/api\/auth\/?$/, "/api/messages");
+  const token = getToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  let response;
+  try {
+    response = await fetch(`${historyUrl}?${params.toString()}`, { headers });
+  } catch (error) {
+    console.error("Falha ao carregar histórico:", error);
+    throw new Error("Não foi possível carregar o histórico.");
+  }
+  let data = null;
+  try { data = await response.json(); } catch {}
+  if (!response.ok) throw new Error(formatApiError(data?.detail, "Não foi possível carregar o histórico."));
+  return data;
+}
+
 export async function uploadAvatar(file) {
   const formData = new FormData();
   formData.append("file", file);
