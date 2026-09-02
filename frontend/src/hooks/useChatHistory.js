@@ -22,6 +22,7 @@ export function useChatHistory(userId) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const messagesRef = useRef(null);
   const historyLoadingRef = useRef(false);
+  const refreshPendingRef = useRef(false);
   const cacheWriteTimerRef = useRef(null);
   const previousUserIdRef = useRef(null);
   const messagesOwnerRef = useRef(null);
@@ -66,7 +67,10 @@ export function useChatHistory(userId) {
     }
   }, [offlineQueue, userKey]);
   async function loadMessageHistory(before = null, preserveScroll = false) {
-    if (historyLoadingRef.current) return;
+    if (historyLoadingRef.current) {
+      if (before == null) refreshPendingRef.current = true;
+      return;
+    }
     if (before && !hasMoreHistory) return;
 
     historyLoadingRef.current = true;
@@ -93,6 +97,10 @@ export function useChatHistory(userId) {
     } finally {
       historyLoadingRef.current = false;
       setHistoryLoading(false);
+      if (refreshPendingRef.current) {
+        refreshPendingRef.current = false;
+        void loadMessageHistory();
+      }
     }
   }
 
@@ -140,6 +148,7 @@ export function useChatHistory(userId) {
     offlineQueue,
     setOfflineQueue,
     historyLoading,
+    loadMessageHistory,
     messagesRef,
     handleMessagesScroll,
     clearLocalHistory,
