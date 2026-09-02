@@ -13,8 +13,9 @@ export function createWebSocket(_legacyToken, { onMessage, onOpen, onClose, onEr
     if (manuallyClosed) return;
     socket = new WebSocket(WS_URL);
     socket.onopen = () => {
+      const reconnected = reconnectAttempt > 0;
       reconnectAttempt = 0;
-      onOpen?.();
+      onOpen?.({ reconnected });
     };
     socket.onmessage = (event) => {
       try {
