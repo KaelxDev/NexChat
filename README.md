@@ -78,11 +78,19 @@ npm run dev
 
 ### Backend
 
-`DATABASE_URL` é usada pelo ambiente de produção para conectar ao PostgreSQL. Sem ela, o backend usa SQLite localmente.
+- `DATABASE_URL` conecta o backend ao PostgreSQL em produção. Sem ela, o backend usa SQLite localmente.
+- `ALLOWED_ORIGINS` define as origens permitidas pelo CORS e pelo handshake do WebSocket, separadas por vírgula.
+
+No deploy do Render, configure `ALLOWED_ORIGINS` com a origem exata publicada no Vercel. A origem atualmente registrada para este repositório é `https://nex-chat-one-eta.vercel.app`.
+
+Exemplo local: `http://localhost:5173,http://127.0.0.1:5173`.
 
 ### Frontend
 
-`VITE_API_URL` define a URL da API HTTP e `VITE_WS_URL` define a URL do WebSocket. Sem essas variáveis, os valores padrão de desenvolvimento/produção definidos no código são utilizados.
+- `VITE_API_URL` define a URL da API HTTP, incluindo `/api/auth`.
+- `VITE_WS_URL` define a URL do WebSocket, incluindo `/ws`.
+
+Os exemplos completos estão em `backend/.env.example` e `frontend/.env.example`.
 
 ## Funcionalidades
 
