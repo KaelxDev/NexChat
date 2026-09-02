@@ -26,6 +26,7 @@ def test_initialize_database_creates_and_records_migrations(tmp_path, monkeypatc
             (1, "baseline_schema"),
             (2, "message_metadata"),
             (3, "persistent_avatars"),
+            (4, "message_history_index"),
         ]
 
         columns = {
