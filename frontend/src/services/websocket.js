@@ -2,8 +2,13 @@ const DEFAULT_WS_URL = "wss://nexchat-backend-2cyf.onrender.com/ws";
 const LOCAL_WS_URL = `ws://${window.location.hostname}:8000/ws`;
 const WS_URL = import.meta.env.VITE_WS_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? LOCAL_WS_URL : DEFAULT_WS_URL);
 const RECONNECT_INTERVAL = 10000;
+const AUTH_CLOSE_CODE = 1008;
+const AUTH_CLOSE_REASON = "authentication required";
 
-export function createWebSocket(_legacyToken, { onMessage, onOpen, onClose, onError, onReconnecting } = {}) {
+export function createWebSocket(
+  _legacyToken,
+  { onMessage, onOpen, onClose, onError, onReconnecting, onAuthenticationRequired } = {},
+) {
   let socket = null;
   let reconnectTimer = null;
   let reconnectAttempt = 0;
@@ -25,7 +30,17 @@ export function createWebSocket(_legacyToken, { onMessage, onOpen, onClose, onEr
       }
     };
     socket.onerror = (error) => onError?.(error);
-    socket.onclose = () => {
+    socket.onclose = (event) => {
+      const reason = String(event.reason || "").trim().toLowerCase();
+      if (event.code === AUTH_CLOSE_CODE && reason === AUTH_CLOSE_REASON) {
+        manuallyClosed = true;
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+        onAuthenticationRequired?.();
+        return;
+      }
       if (manuallyClosed) {
         onClose?.();
         return;
