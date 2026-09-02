@@ -34,7 +34,7 @@ export default function AuthScreen({ onAuthenticated }) {
   return (
     <main className="app">
       <section className="login">
-        <h1>💬 Poknex</h1>
+        <h1>💬 Pokinex</h1>
         <p>
           {mode === "login"
             ? "Entre na sua conta para conversar em tempo real."
