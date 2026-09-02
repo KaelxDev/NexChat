@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { createWebSocket } from "../services/websocket";
 
-export function useChatConnection(enabled, { onMessage, onOpen } = {}) {
+export function useChatConnection(
+  enabled,
+  { onMessage, onOpen, onAuthenticationRequired } = {},
+) {
   const socketRef = useRef(null);
-  const callbackRef = useRef({ onMessage, onOpen });
+  const callbackRef = useRef({ onMessage, onOpen, onAuthenticationRequired });
   const generationRef = useRef(0);
   const activeRef = useRef(Boolean(enabled));
   const [connected, setConnected] = useState(false);
@@ -12,8 +15,8 @@ export function useChatConnection(enabled, { onMessage, onOpen } = {}) {
   const [reconnectSeconds, setReconnectSeconds] = useState(0);
 
   useEffect(() => {
-    callbackRef.current = { onMessage, onOpen };
-  }, [onMessage, onOpen]);
+    callbackRef.current = { onMessage, onOpen, onAuthenticationRequired };
+  }, [onMessage, onOpen, onAuthenticationRequired]);
 
   useEffect(() => {
     activeRef.current = Boolean(enabled);
@@ -63,6 +66,14 @@ export function useChatConnection(enabled, { onMessage, onOpen } = {}) {
         setConnectionStatus("reconnecting");
         setReconnectAttempt(attempt);
         setReconnectSeconds(10);
+      },
+      onAuthenticationRequired() {
+        if (disposed || generation !== generationRef.current) return;
+        setConnected(false);
+        setConnectionStatus("disconnected");
+        setReconnectAttempt(0);
+        setReconnectSeconds(0);
+        callbackRef.current.onAuthenticationRequired?.();
       },
       onError: (error) => console.error("Erro no WebSocket:", error),
     });
