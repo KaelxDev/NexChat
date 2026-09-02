@@ -1,4 +1,4 @@
-# NexChat
+#  Pokinex
 
 Aplicação de chat em tempo real construída com React/Vite no frontend e FastAPI/WebSocket no backend.
 
