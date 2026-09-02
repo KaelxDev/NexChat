@@ -44,6 +44,7 @@ def make_request(scheme="https", headers=None):
 
 def test_allowed_origins_are_exact():
     assert is_allowed_origin("https://nexchat-chat.vercel.app")
+    assert is_allowed_origin("https://nex-chat-one-eta.vercel.app")
     assert is_allowed_origin("http://localhost:5173")
     assert not is_allowed_origin("https://evil.vercel.app")
     assert not is_allowed_origin("https://nexchat-chat.vercel.app.evil.example")
