@@ -21,6 +21,7 @@ export default function AppEdit() {
     offlineQueue,
     setOfflineQueue,
     historyLoading,
+    loadMessageHistory,
     messagesRef,
     handleMessagesScroll,
     clearLocalHistory,
@@ -219,6 +220,10 @@ export default function AppEdit() {
     }
   }, [mergeUser, setMessages, setOfflineQueue, syncProfile, userRef]);
 
+  const handleConnectionOpen = useCallback(({ reconnected } = {}) => {
+    if (reconnected) void loadMessageHistory();
+  }, [loadMessageHistory]);
+
   const {
     socketRef,
     connected,
@@ -227,6 +232,7 @@ export default function AppEdit() {
     reconnectSeconds,
   } = useChatConnection(Boolean(authChecked && user), {
     onMessage: handleWebSocketMessage,
+    onOpen: handleConnectionOpen,
   });
 
   useEffect(() => {
