@@ -39,13 +39,13 @@ export function useChatConnection(enabled, { onMessage, onOpen } = {}) {
     setReconnectSeconds(0);
 
     const socket = createWebSocket("", {
-      onOpen() {
+      onOpen(info) {
         if (disposed || generation !== generationRef.current) return;
         setConnected(true);
         setConnectionStatus("connected");
         setReconnectAttempt(0);
         setReconnectSeconds(0);
-        callbackRef.current.onOpen?.();
+        callbackRef.current.onOpen?.(info);
       },
       onMessage(data) {
         if (disposed || generation !== generationRef.current) return;
