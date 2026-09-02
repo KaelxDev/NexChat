@@ -233,6 +233,7 @@ export default function AppEdit() {
   } = useChatConnection(Boolean(authChecked && user), {
     onMessage: handleWebSocketMessage,
     onOpen: handleConnectionOpen,
+    onAuthenticationRequired: logout,
   });
 
   useEffect(() => {
