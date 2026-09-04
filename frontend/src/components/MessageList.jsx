@@ -27,6 +27,8 @@ export default function MessageList({
   onLongPressStart,
   onLongPressEnd,
 }) {
+  const showEmptyState = !historyLoading && messages.length === 0;
+
   return (
     <div className="messages" ref={messagesRef} onScroll={onScroll}>
       {historyLoading && (
@@ -36,6 +38,21 @@ export default function MessageList({
           style={{ padding: "8px 0", textAlign: "center", opacity: 0.7, fontSize: "13px" }}
         >
           Carregando mensagens anteriores...
+        </div>
+      )}
+
+      {showEmptyState && (
+        <div className="chat-empty-state">
+          <div className="chat-empty-icon">
+            <img src="/icone.png?v=2" alt="" />
+          </div>
+          <h2>Comece a conversa</h2>
+          <p>
+            Este é o canal <strong>#geral</strong>. Envie a primeira mensagem e ela aparecerá aqui em tempo real.
+          </p>
+          <span className="chat-empty-hint">
+            {connected ? "Conexão ativa · você pode enviar agora" : "Sem conexão · sua mensagem será colocada na fila"}
+          </span>
         </div>
       )}
 
