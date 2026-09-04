@@ -1,3 +1,5 @@
+import { normalizeAvatarUrl } from "../utils/chat";
+
 export default function ProfileModal({
   open,
   user,
@@ -11,7 +13,7 @@ export default function ProfileModal({
   if (!open) return null;
 
   const displayName = profile?.displayName || user?.displayName || user?.username || "Usuário";
-  const avatar = profile?.avatar || "";
+  const avatar = normalizeAvatarUrl(profile?.avatar || user?.avatar, user?.id);
 
   return (
     <div
@@ -62,7 +64,7 @@ export default function ProfileModal({
             name="status"
             placeholder="Ex.: Jogando 🎮"
             maxLength={60}
-            defaultValue={profile?.status || ""}
+            defaultValue={profile?.status || user?.status || ""}
           />
         </label>
 
