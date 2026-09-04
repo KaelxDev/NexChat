@@ -77,6 +77,7 @@ export default function MessageList({
           message.userId != null
             ? String(message.userId) === String(user.id)
             : String(message.username || "") === String(user.username || "");
+        const isBot = String(message.userId) === "moderation-bot" || message.role === "bot";
         const messageProfile = isMine ? profile || user : profilesById[message.userId] || message;
         const messageAvatar = normalizeAvatarUrl(
           messageProfile?.avatar || message.avatar,
@@ -90,7 +91,7 @@ export default function MessageList({
 
         return (
           <div
-            className={`message ${isMine ? "mine" : "other"} ${grouped ? "grouped" : "group-start"} ${groupEnd ? "group-end" : "group-middle"} ${message.deleted ? "deleted" : ""}`}
+            className={`message ${isMine ? "mine" : "other"} ${grouped ? "grouped" : "group-start"} ${groupEnd ? "group-end" : "group-middle"} ${isBot ? "bot-message" : ""} ${message.deleted ? "deleted" : ""}`}
             key={message.messageId || index}
           >
             {!grouped ? (
@@ -105,6 +106,7 @@ export default function MessageList({
               {!grouped && (
                 <span className="message-user">
                   {messageProfile?.displayName || message.displayName || message.username}
+                  {isBot && <small className="message-role-badge bot">BOT</small>}
                 </span>
               )}
 
