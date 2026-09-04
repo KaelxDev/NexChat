@@ -11,9 +11,7 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
             </div>
             <span>{replyingTo.deleted ? "Esta mensagem foi excluída" : replyingTo.message}</span>
           </div>
-          <button type="button" onClick={onCancelReply} aria-label="Cancelar resposta">
-            ✕
-          </button>
+          <button type="button" onClick={onCancelReply} aria-label="Cancelar resposta">✕</button>
         </div>
       )}
 
@@ -22,13 +20,7 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
           <span className={`composer-state ${connected ? "ready" : "offline"}`} aria-hidden="true" />
           <textarea
             aria-label={replyingTo ? "Digite sua resposta" : "Digite sua mensagem"}
-            placeholder={
-              connected
-                ? replyingTo
-                  ? "Digite sua resposta..."
-                  : "Digite uma mensagem..."
-                : "Sem conexão — a mensagem será enviada depois..."
-            }
+            placeholder={connected ? (replyingTo ? "Transmitir resposta..." : "Transmitir mensagem...") : "Sem sinal — armazenando para envio posterior..."}
             value={messageInput}
             onChange={(event) => onChange(event.target.value)}
             rows={1}
@@ -42,15 +34,15 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
           />
         </div>
         <button className="composer-send" type="submit" disabled={!messageInput.trim()} aria-label="Enviar mensagem">
-          <span className="composer-send-label">Enviar</span>
+          <span className="composer-send-label">Transmitir</span>
           <span className="composer-send-icon" aria-hidden="true">↑</span>
         </button>
       </form>
 
       <div className="input-hint">
-        <span>Enter envia · Shift + Enter cria uma nova linha</span>
+        <span>ENTER transmite · SHIFT + ENTER nova linha</span>
         <span className={offlineQueueLength ? "queue-active" : ""}>
-          {offlineQueueLength ? `📦 ${offlineQueueLength} pendente(s)` : connected ? "● Conexão estável" : "○ Offline"}
+          {offlineQueueLength ? `◌ ${offlineQueueLength} em fila` : connected ? "● Sinal estável" : "○ Sem sinal"}
         </span>
       </div>
     </div>
