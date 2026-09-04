@@ -1,0 +1,98 @@
+/* POKINEX — definitive message flow layout */
+
+/* Other users: avatar | content */
+.message.other {
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr) !important;
+  column-gap: 10px !important;
+}
+
+.message.other .message-avatar,
+.message.other .message-avatar-spacer {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+.message.other .message-main {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* Own messages: content | avatar */
+.message.mine {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 36px !important;
+  column-gap: 10px !important;
+  justify-self: stretch !important;
+  align-self: stretch !important;
+}
+
+.message.mine .message-main {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+
+.message.mine .message-avatar,
+.message.mine .message-avatar-spacer {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  justify-self: end !important;
+}
+
+/* Give the content column real room. The bubble is allowed to size naturally
+   up to a sensible chat width instead of collapsing to a single character. */
+.message.mine .message-row {
+  width: min(100%, 760px) !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+}
+
+.message.mine .message-bubble-wrap {
+  width: fit-content !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.message.mine .message-bubble {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.message.mine .message-user,
+.message.mine .message-meta,
+.message.mine .message-reaction-area {
+  align-self: flex-end !important;
+}
+
+@media (max-width: 700px) {
+  .message.mine,
+  .message.mine.other {
+    grid-template-columns: minmax(0, 1fr) 32px !important;
+  }
+
+  .message.mine .message-avatar,
+  .message.mine .message-avatar-spacer {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+  }
+
+  .message.mine .message-row {
+    width: min(100%, 86vw) !important;
+  }
+}
