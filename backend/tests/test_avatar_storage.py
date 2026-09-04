@@ -1,7 +1,19 @@
 from datetime import datetime, timezone
 
+import app.auth as auth
 import app.database as database
 from app.avatar_storage import get_avatar, store_avatar
+
+
+def _create_user(connection, username="kael"):
+    created_at = datetime.now(timezone.utc).isoformat()
+    connection.execute(
+        "INSERT INTO users "
+        "(username, password_hash, password_salt, display_name, created_at) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (username, "hash", "salt", "Kael", created_at),
+    )
+    connection.commit()
 
 
 def test_avatar_roundtrip_persists_binary_content(tmp_path, monkeypatch):
@@ -9,16 +21,9 @@ def test_avatar_roundtrip_persists_binary_content(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "SQLITE_DB_PATH", db_path)
     database.initialize_database()
 
-    created_at = datetime.now(timezone.utc).isoformat()
     connection = database.get_connection()
     try:
-        connection.execute(
-            "INSERT INTO users "
-            "(username, password_hash, password_salt, display_name, created_at) "
-            "VALUES (?, ?, ?, ?, ?)",
-            ("kael", "hash", "salt", "Kael", created_at),
-        )
-        connection.commit()
+        _create_user(connection)
     finally:
         connection.close()
 
@@ -34,16 +39,9 @@ def test_avatar_update_replaces_previous_content(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "SQLITE_DB_PATH", db_path)
     database.initialize_database()
 
-    created_at = datetime.now(timezone.utc).isoformat()
     connection = database.get_connection()
     try:
-        connection.execute(
-            "INSERT INTO users "
-            "(username, password_hash, password_salt, display_name, created_at) "
-            "VALUES (?, ?, ?, ?, ?)",
-            ("kael", "hash", "salt", "Kael", created_at),
-        )
-        connection.commit()
+        _create_user(connection)
     finally:
         connection.close()
 
@@ -51,3 +49,30 @@ def test_avatar_update_replaces_previous_content(tmp_path, monkeypatch):
     store_avatar(1, b"second", "image/webp")
 
     assert get_avatar(1) == (b"second", "image/webp")
+
+
+def test_auth_returns_persistent_avatar_reference(tmp_path, monkeypatch):
+    db_path = tmp_path / "test.db"
+    monkeypatch.setattr(database, "SQLITE_DB_PATH", db_path)
+    database.initialize_database()
+
+    password_hash, password_salt = auth.hash_password("senha-forte-123")
+    connection = database.get_connection()
+    try:
+        created_at = datetime.now(timezone.utc).isoformat()
+        connection.execute(
+            "INSERT INTO users "
+            "(username, password_hash, password_salt, display_name, created_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            ("kael", password_hash, password_salt, "Kael", created_at),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+    store_avatar(1, b"avatar", "image/png")
+
+    user = auth.authenticate("kael", "senha-forte-123")
+
+    assert user is not None
+    assert user["avatar"].startswith("/api/auth/avatar/1?v=")
