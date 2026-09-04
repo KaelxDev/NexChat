@@ -128,14 +128,15 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
           <ul className="users">
             {users.map((onlineUser) => {
               const onlineAvatar = normalizeAvatarUrl(onlineUser.avatar, onlineUser.id);
-              const name = onlineUser.displayName || onlineUser.username;
+              const name = onlineUser.displayName || onlineUser.username || "Usuário";
               const isSelf = String(onlineUser.id) === String(user?.id);
+              const canDM = !isSelf && Number.isFinite(Number(onlineUser.id));
               const unread = Number(unreadByUser[onlineUser.id] || 0);
 
               return (
                 <li className={`user${unread ? " has-dm-unread" : ""}`} key={onlineUser.id}>
                   <button
-                    className={`user-dm-trigger${isSelf ? " self" : ""}`}
+                    className={`user-dm-trigger${isSelf ? " self" : ""}${!canDM ? " disabled" : ""}`}
                     type="button"
                     data-dm-user-id={onlineUser.id}
                     data-dm-username={onlineUser.username}
@@ -143,8 +144,14 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
                     data-dm-avatar={onlineAvatar || ""}
                     data-dm-online={String(Boolean(onlineUser.online ?? true))}
                     data-dm-self={String(isSelf)}
-                    disabled={isSelf}
-                    title={isSelf ? "Você" : `Enviar mensagem privada para ${name}`}
+                    disabled={!canDM}
+                    title={
+                      isSelf
+                        ? "Você"
+                        : canDM
+                          ? `Enviar mensagem privada para ${name}`
+                          : "Mensagem privada indisponível"
+                    }
                     onClick={handleDMClick}
                   >
                     <div className="avatar user-avatar">
@@ -153,9 +160,9 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
                     </div>
                     <div className="user-info">
                       <strong>{name}</strong>
-                      <span>@{onlineUser.username}</span>
+                      <span>{onlineUser.username ? `@${onlineUser.username}` : "Sistema"}</span>
                     </div>
-                    {!isSelf && (
+                    {canDM && (
                       <span className="user-dm-meta" aria-hidden="true">
                         {unread > 0 ? <b className="dm-unread-badge">{unread > 99 ? "99+" : unread}</b> : <span className="user-dm-hint">✉</span>}
                       </span>
