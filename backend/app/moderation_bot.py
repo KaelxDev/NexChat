@@ -6,7 +6,7 @@ BOT_USER = {
     "id": "moderation-bot",
     "username": "PokiBot",
     "displayName": "PokiBot",
-    "avatar": "🤖",
+    "avatar": "/pokibot-icon.jpg",
     "status": "online",
 }
 
