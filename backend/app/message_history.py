@@ -26,6 +26,7 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
                 CASE
                     WHEN ua.user_id IS NOT NULL THEN
                         '/api/auth/avatar/' || CAST(u.id AS TEXT) || '?v=' || ua.updated_at
+                    WHEN u.avatar LIKE '/api/auth/avatar/%' OR u.avatar LIKE '/media/%' THEN ''
                     ELSE u.avatar
                 END AS avatar,
                 r.message_id AS reply_message_id,
@@ -37,6 +38,7 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
                 CASE
                     WHEN rua.user_id IS NOT NULL THEN
                         '/api/auth/avatar/' || CAST(ru.id AS TEXT) || '?v=' || rua.updated_at
+                    WHEN ru.avatar LIKE '/api/auth/avatar/%' OR ru.avatar LIKE '/media/%' THEN ''
                     ELSE ru.avatar
                 END AS reply_avatar
             FROM messages m
