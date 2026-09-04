@@ -1,0 +1,210 @@
+/* Pokinex mobile shell: the phone gets its own navigation model. */
+
+@media (max-width: 700px) {
+  :root {
+    --mobile-bar-height: 60px;
+    --mobile-composer-height: 68px;
+  }
+
+  .chat {
+    position: relative;
+    display: block !important;
+    width: 100vw;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .chat-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .chat-header {
+    position: relative;
+    z-index: 30;
+    flex: 0 0 var(--mobile-bar-height);
+    min-height: var(--mobile-bar-height);
+    height: var(--mobile-bar-height);
+    padding: max(8px, env(safe-area-inset-top)) 10px 8px;
+  }
+
+  .chat-header-main {
+    min-width: 0;
+  }
+
+  .chat-header-status {
+    gap: 6px;
+  }
+
+  .connection {
+    max-width: 42px;
+    min-width: 42px;
+    width: 42px;
+    height: 36px;
+    overflow: hidden;
+    justify-content: center;
+    padding: 0;
+    border-radius: 10px;
+    font-size: 0;
+  }
+
+  .connection-dot {
+    flex: 0 0 7px;
+    width: 7px;
+    height: 7px;
+  }
+
+  .logout {
+    width: 40px;
+    min-width: 40px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .logout > span:last-child {
+    display: none;
+  }
+
+  .messages {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    padding: 12px 10px 10px;
+  }
+
+  .composer-zone {
+    position: relative;
+    z-index: 25;
+    flex: 0 0 auto;
+    width: 100%;
+    padding: 6px 8px max(8px, env(safe-area-inset-bottom));
+    background: #0f1115;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .message-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 8px;
+    align-items: end;
+    width: 100%;
+    padding: 0;
+  }
+
+  .composer-input-shell {
+    min-width: 0;
+  }
+
+  .message-form textarea {
+    width: 100%;
+    min-height: 44px;
+    max-height: 120px;
+    padding: 10px 12px;
+    font-size: 16px;
+    line-height: 1.35;
+    border-radius: 13px;
+  }
+
+  .composer-send {
+    width: 48px;
+    min-width: 48px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 13px;
+  }
+
+  .composer-send-label {
+    display: none;
+  }
+
+  .composer-send-icon {
+    display: inline-block;
+    font-size: 20px;
+  }
+
+  .reply-composer {
+    margin: 0 0 6px;
+    border-radius: 11px;
+  }
+
+  .auto-message-scroll-shell,
+  .auto-message-scroll-content {
+    min-height: 0;
+    height: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .chat-header {
+    padding-inline: 8px;
+  }
+
+  .channel-topic,
+  .channel-pill {
+    display: none;
+  }
+
+  .channel-title-row h1 {
+    font-size: 16px;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0;
+    z-index: 100;
+    width: min(88vw, 320px) !important;
+    height: 100dvh !important;
+    flex: none !important;
+    padding: max(14px, env(safe-area-inset-top)) 12px max(14px, env(safe-area-inset-bottom));
+    background: #101217;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.38);
+    transform: translateX(-102%);
+    transition: transform 180ms ease;
+    will-change: transform;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(3, 4, 7, 0.72);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  .messages {
+    padding-inline: 8px;
+  }
+
+  .message {
+    max-width: 92% !important;
+  }
+
+  .message-bubble {
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .message-form {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .composer-send {
+    width: 44px;
+    min-width: 44px;
+  }
+}
