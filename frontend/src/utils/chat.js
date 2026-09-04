@@ -5,6 +5,49 @@ export const HISTORY_PAGE_SIZE = 50;
 export const LOCAL_CACHE_LIMIT = 200;
 export const REACTION_OPTIONS = ["❤️", "😂", "😮", "😢", "😡", "👍"];
 
+const DEFAULT_API_URL = "https://nexchat-backend-2cyf.onrender.com/api/auth";
+
+function getApiOrigin() {
+  const configured = import.meta.env.VITE_API_URL?.trim();
+  if (configured) {
+    try {
+      return new URL(configured).origin;
+    } catch {
+      // Fall back to the known API origin below.
+    }
+  }
+
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return `http://${window.location.hostname}:8000`;
+  }
+
+  return new URL(DEFAULT_API_URL).origin;
+}
+
+export function normalizeAvatarUrl(avatar, userId = null) {
+  const value = String(avatar || "").trim();
+  if (!value) return "";
+
+  if (value.startsWith("data:") || value.startsWith("blob:")) return value;
+
+  try {
+    const apiOrigin = getApiOrigin();
+    const url = new URL(value, apiOrigin);
+
+    if (userId != null && url.pathname.startsWith("/media/")) {
+      return `${apiOrigin}/api/auth/avatar/${encodeURIComponent(userId)}`;
+    }
+
+    if (url.pathname.startsWith("/api/auth/avatar/")) {
+      return `${apiOrigin}${url.pathname}${url.search}`;
+    }
+
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
 export function formatTime(timestamp) {
   if (!timestamp) return "";
   return new Date(timestamp).toLocaleTimeString("pt-BR", {
@@ -71,6 +114,13 @@ export function mergeServerHistory(current, incoming) {
       deliveryStatus: "sent",
       editPending: false,
       deletePending: false,
+      avatar: normalizeAvatarUrl(item.avatar, item.userId),
+      replyTo: item.replyTo
+        ? {
+            ...item.replyTo,
+            avatar: normalizeAvatarUrl(item.replyTo.avatar, item.replyTo.userId),
+          }
+        : item.replyTo,
     });
   }
 
