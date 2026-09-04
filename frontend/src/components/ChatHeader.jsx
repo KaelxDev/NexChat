@@ -6,9 +6,23 @@ export default function ChatHeader({ connectionStatus, reconnectAttempt, reconne
         ? "connecting"
         : "online";
 
+  function toggleMobileSidebar() {
+    window.dispatchEvent(new CustomEvent("pokinex:mobile-sidebar-toggle"));
+  }
+
   return (
     <header className="chat-header">
       <div className="chat-header-main">
+        <button
+          className="chat-menu-toggle"
+          type="button"
+          onClick={toggleMobileSidebar}
+          aria-label="Abrir navegação"
+          title="Abrir navegação"
+        >
+          <span aria-hidden="true">☰</span>
+        </button>
+
         <div className="channel-copy">
           <div className="channel-title-row">
             <h1>
