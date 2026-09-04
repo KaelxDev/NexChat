@@ -17,10 +17,19 @@ function formatApiError(detail, fallback = "Erro na autenticação.") {
   return fallback;
 }
 
+async function readResponseData(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 async function request(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
+
   let response;
   try {
     response = await fetch(`${API_URL}${path}`, {
@@ -32,8 +41,8 @@ async function request(path, options = {}) {
     console.error("Falha de conexão com a API:", error);
     throw new Error("Não foi possível conectar ao backend.");
   }
-  let data = null;
-  try { data = await response.json(); } catch {}
+
+  const data = await readResponseData(response);
   if (!response.ok) throw new Error(formatApiError(data?.detail));
   return data;
 }
@@ -82,17 +91,22 @@ export async function getMessageHistory(limit = 50, before = null) {
     console.error("Falha ao carregar histórico:", error);
     throw new Error("Não foi possível carregar o histórico.");
   }
-  let data = null;
-  try { data = await response.json(); } catch {}
+
+  const data = await readResponseData(response);
   if (!response.ok) throw new Error(formatApiError(data?.detail, "Não foi possível carregar o histórico."));
   return data;
 }
 
 export async function uploadAvatar(file) {
+  if (!(file instanceof File)) {
+    throw new Error("Selecione uma imagem válida.");
+  }
+
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", file, file.name || "avatar");
   const token = getToken();
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
   let response;
   try {
     response = await fetch(`${API_URL}/avatar`, {
@@ -103,11 +117,22 @@ export async function uploadAvatar(file) {
     });
   } catch (error) {
     console.error("Falha ao enviar avatar:", error);
-    throw new Error("Não foi possível enviar a imagem ao backend.");
+    throw new Error("Não foi possível conectar ao backend para enviar a imagem.");
   }
-  let data = null;
-  try { data = await response.json(); } catch {}
-  if (!response.ok) throw new Error(formatApiError(data?.detail, "Não foi possível enviar a imagem."));
+
+  const data = await readResponseData(response);
+  if (!response.ok) {
+    const message = formatApiError(
+      data?.detail,
+      `Não foi possível enviar a imagem (HTTP ${response.status}).`,
+    );
+    throw new Error(message);
+  }
+
+  if (!data?.avatar) {
+    throw new Error("O backend não retornou o endereço do avatar.");
+  }
+
   return data.avatar;
 }
 
