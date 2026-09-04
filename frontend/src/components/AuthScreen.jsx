@@ -34,12 +34,20 @@ export default function AuthScreen({ onAuthenticated }) {
   return (
     <main className="app">
       <section className="login">
-        <h1>💬 Pokinex</h1>
+        <div className="auth-brand">
+          <img src="/icone.png?v=2" alt="" />
+          <div className="auth-brand-copy">
+            <h1>Pokinex</h1>
+            <span>Comunicação em tempo real</span>
+          </div>
+        </div>
+
         <p>
           {mode === "login"
             ? "Entre na sua conta para conversar em tempo real."
-            : "Crie sua conta para começar a usar o Poknex."}
+            : "Crie sua conta para começar a usar o Pokinex."}
         </p>
+
         {error && <div className="status disconnected">🔴 {error}</div>}
 
         <form className="login-form" onSubmit={submit}>
