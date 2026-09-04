@@ -3,8 +3,6 @@ from anyio import to_thread
 from app.auth import get_user_by_id
 from app.direct_messages import save_direct_message
 
-MAX_MESSAGE_LENGTH = 1000
-
 
 async def send_direct_message(
     manager,
@@ -36,6 +34,7 @@ async def send_direct_message(
         )
         return
 
+    timestamp = manager.get_timestamp()
     if message_id:
         try:
             await to_thread.run_sync(
@@ -44,7 +43,7 @@ async def send_direct_message(
                 sender_user["id"],
                 recipient_id,
                 message,
-                manager.get_timestamp(),
+                timestamp,
             )
         except Exception:
             await sender.send_json(
@@ -56,7 +55,6 @@ async def send_direct_message(
             )
             return
 
-    timestamp = manager.get_timestamp()
     event = {
         "type": "direct_message",
         "messageId": message_id,
