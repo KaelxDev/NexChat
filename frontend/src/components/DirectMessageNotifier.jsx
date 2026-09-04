@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createWebSocket } from "../services/websocket";
 import { notifyDirectMessage } from "../notifications";
 
@@ -29,70 +29,70 @@ function playNotificationSound() {
 
 export default function DirectMessageNotifier() {
   const [toast, setToast] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const socketRef = useRef(null);
-  const reconnectTimerRef = useRef(null);
 
   useEffect(() => {
     let active = true;
+    let retryTimer = null;
+    let socket = null;
 
     async function start() {
       try {
         const response = await fetch(`${API_URL}/me`, { credentials: "include" });
         const data = await response.json().catch(() => null);
-        if (!active || !response.ok || !data?.user?.id) return;
-        setCurrentUserId(Number(data.user.id));
+        const meId = Number(data?.user?.id);
 
-        const socket = createWebSocket("", {
-          onMessage(data) {
-            if (data?.type !== "direct_message") return;
-            if (Number(data.senderId) === Number(data.userId) && Number(data.senderId) === Number(currentUserId)) return;
-            if (Number(data.recipientId) !== Number(data.userId) && currentUserId == null) return;
-            if (currentUserId != null && Number(data.recipientId) !== Number(currentUserId)) return;
+        if (!active || !response.ok || !Number.isFinite(meId)) {
+          retryTimer = window.setTimeout(start, 5000);
+          return;
+        }
 
-            const senderId = Number(data.senderId ?? data.userId);
-            if (senderId === Number(currentUserId)) return;
+        socket = createWebSocket("", {
+          onMessage(message) {
+            if (message?.type !== "direct_message") return;
 
-            const message = {
-              ...data,
+            const senderId = Number(message.senderId ?? message.userId);
+            const recipientId = Number(message.recipientId);
+            if (!Number.isFinite(senderId) || senderId === meId || recipientId !== meId) return;
+
+            const normalized = {
+              ...message,
               senderId,
               userId: senderId,
-              displayName: data.displayName || data.username || "Usuário",
+              displayName: message.displayName || message.username || "Usuário",
             };
 
-            notifyDirectMessage(message);
+            notifyDirectMessage(normalized);
             playNotificationSound();
-            setToast(message);
+            setToast(normalized);
 
-            if (typeof document !== "undefined") {
-              const currentTitle = document.title.replace(/^\(\d+\)\s*/, "");
-              document.title = `(1) ${currentTitle || "Pokinex"}`;
+            if (document.visibilityState !== "visible") {
+              const cleanTitle = document.title.replace(/^\(\d+\)\s*/, "") || "Pokinex";
+              document.title = `(1) ${cleanTitle}`;
             }
 
             if (typeof Notification !== "undefined" && Notification.permission === "granted") {
               try {
-                new Notification(message.displayName, {
-                  body: message.message || "Nova mensagem privada",
+                new Notification(normalized.displayName, {
+                  body: normalized.message || "Nova mensagem privada",
                   icon: "/icone.png",
                   tag: `pokinex-dm-${senderId}`,
                 });
-              } catch (notificationError) {
-                console.debug("Notificação do sistema indisponível:", notificationError);
+              } catch (error) {
+                console.debug("Notificação do sistema indisponível:", error);
               }
             }
           },
           onAuthenticationRequired() {
-            clearTimeout(reconnectTimerRef.current);
-            reconnectTimerRef.current = window.setTimeout(start, 4000);
+            socket?.close();
+            socket = null;
+            clearTimeout(retryTimer);
+            retryTimer = window.setTimeout(start, 4000);
           },
           onError: (error) => console.debug("Notificador DM:", error),
         });
-        socketRef.current = socket;
       } catch (error) {
-        if (active) {
-          clearTimeout(reconnectTimerRef.current);
-          reconnectTimerRef.current = window.setTimeout(start, 5000);
-        }
+        clearTimeout(retryTimer);
+        retryTimer = window.setTimeout(start, 5000);
       }
     }
 
@@ -100,9 +100,9 @@ export default function DirectMessageNotifier() {
 
     return () => {
       active = false;
-      clearTimeout(reconnectTimerRef.current);
-      socketRef.current?.close();
-      socketRef.current = null;
+      clearTimeout(retryTimer);
+      socket?.close();
+      socket = null;
     };
   }, []);
 
@@ -114,8 +114,9 @@ export default function DirectMessageNotifier() {
 
   useEffect(() => {
     function resetTitle() {
+      if (document.visibilityState !== "visible") return;
       const title = document.title.replace(/^\(\d+\)\s*/, "");
-      if (document.visibilityState === "visible") document.title = title || "Pokinex";
+      document.title = title || "Pokinex";
     }
     document.addEventListener("visibilitychange", resetTitle);
     window.addEventListener("focus", resetTitle);
