@@ -1,4 +1,4 @@
-import { canGroup, formatTime, REACTION_OPTIONS, userInitial } from "../utils/chat";
+import { canGroup, formatTime, normalizeAvatarUrl, REACTION_OPTIONS, userInitial } from "../utils/chat";
 
 export default function MessageList({
   messages,
@@ -59,7 +59,11 @@ export default function MessageList({
           message.userId != null
             ? String(message.userId) === String(user.id)
             : String(message.username || "") === String(user.username || "");
-        const messageProfile = isMine ? profile : profilesById[message.userId] || message;
+        const messageProfile = isMine ? profile || user : profilesById[message.userId] || message;
+        const messageAvatar = normalizeAvatarUrl(
+          messageProfile?.avatar || message.avatar,
+          messageProfile?.id || message.userId,
+        );
         const isEditing = editingId === message.messageId;
         const reactionCounts = message.reactions || {};
         const visibleReactions = REACTION_OPTIONS.filter(
@@ -73,8 +77,8 @@ export default function MessageList({
           >
             {!grouped ? (
               <div className="message-avatar">
-                {messageProfile?.avatar ? (
-                  <img src={messageProfile.avatar} alt="" />
+                {messageAvatar ? (
+                  <img src={messageAvatar} alt="" />
                 ) : (
                   userInitial(messageProfile)
                 )}
