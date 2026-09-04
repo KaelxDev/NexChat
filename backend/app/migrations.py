@@ -182,11 +182,66 @@ def _migration_004_message_history_index(connection, postgres: bool) -> None:
     )
 
 
+def _migration_005_direct_messages(connection, postgres: bool) -> None:
+    if postgres:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS direct_messages (
+                message_id TEXT PRIMARY KEY,
+                sender_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                recipient_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                message TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                edited_at TEXT,
+                deleted_at TEXT,
+                CHECK (sender_id <> recipient_id)
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_direct_messages_pair
+            ON direct_messages(sender_id, recipient_id, created_at)
+            """
+        )
+        connection.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_direct_messages_reverse_pair
+            ON direct_messages(recipient_id, sender_id, created_at)
+            """
+        )
+        return
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS direct_messages (
+            message_id TEXT PRIMARY KEY,
+            sender_id INTEGER NOT NULL,
+            recipient_id INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            edited_at TEXT,
+            deleted_at TEXT,
+            CHECK (sender_id <> recipient_id),
+            FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_direct_messages_pair ON direct_messages(sender_id, recipient_id, created_at)"
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_direct_messages_reverse_pair ON direct_messages(recipient_id, sender_id, created_at)"
+    )
+
+
 MIGRATIONS = (
     Migration(1, "baseline_schema", _migration_001_baseline),
     Migration(2, "message_metadata", _migration_002_message_fields),
     Migration(3, "persistent_avatars", _migration_003_persistent_avatars),
     Migration(4, "message_history_index", _migration_004_message_history_index),
+    Migration(5, "direct_messages", _migration_005_direct_messages),
 )
 
 
