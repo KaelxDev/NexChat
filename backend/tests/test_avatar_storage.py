@@ -76,3 +76,27 @@ def test_auth_returns_persistent_avatar_reference(tmp_path, monkeypatch):
 
     assert user is not None
     assert user["avatar"].startswith("/api/auth/avatar/1?v=")
+
+
+def test_missing_avatar_ignores_stale_avatar_routes(tmp_path, monkeypatch):
+    db_path = tmp_path / "test.db"
+    monkeypatch.setattr(database, "SQLITE_DB_PATH", db_path)
+    database.initialize_database()
+
+    connection = database.get_connection()
+    try:
+        _create_user(connection)
+        connection.execute(
+            "UPDATE users SET avatar = ? WHERE id = 1",
+            ("/api/auth/avatar/1",),
+        )
+        connection.commit()
+        avatar = database._persistent_avatar_reference(
+            connection,
+            1,
+            "/api/auth/avatar/1",
+        )
+    finally:
+        connection.close()
+
+    assert avatar == ""
