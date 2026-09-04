@@ -1,0 +1,518 @@
+/* =========================================================
+   POKINEX — DESIGN SYSTEM 1.0
+   Visual refinement layer built on the existing components.
+========================================================= */
+
+:root {
+  --ds-bg: #050a0f;
+  --ds-bg-2: #08121a;
+  --ds-surface: #0c1821;
+  --ds-surface-2: #10202b;
+  --ds-surface-3: #142834;
+  --ds-line: rgba(143, 228, 238, 0.12);
+  --ds-line-strong: rgba(143, 228, 238, 0.22);
+  --ds-cyan: #7be5ee;
+  --ds-cyan-strong: #46c8d8;
+  --ds-violet: #8f7dff;
+  --ds-green: #69ddb0;
+  --ds-text: #f4fbff;
+  --ds-text-2: #b7c7d3;
+  --ds-text-3: #718592;
+  --ds-text-4: #4e6471;
+  --ds-radius: 16px;
+  --ds-radius-lg: 22px;
+  --ds-shadow: 0 26px 80px rgba(0, 0, 0, 0.45);
+  --ds-ease: 170ms cubic-bezier(.2,.8,.2,1);
+}
+
+html,
+body {
+  background: var(--ds-bg);
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ---------------------------------------------------------
+   LOGIN EXPERIENCE
+--------------------------------------------------------- */
+
+.auth-page {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(123,229,238,.08), transparent 30%),
+    radial-gradient(circle at 22% 75%, rgba(143,125,255,.06), transparent 22%);
+}
+
+.auth-page .login {
+  width: min(100%, 470px);
+  padding: 38px;
+  border-color: var(--ds-line-strong);
+  border-radius: 26px;
+  background:
+    linear-gradient(160deg, rgba(13,27,37,.98), rgba(5,12,18,.99));
+  box-shadow: var(--ds-shadow), inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.auth-page .auth-brand img {
+  width: 62px;
+  height: 62px;
+  flex-basis: 62px;
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px var(--ds-line-strong),
+    0 0 34px rgba(123,229,238,.12),
+    0 16px 34px rgba(0,0,0,.3);
+}
+
+.auth-page .auth-kicker {
+  color: var(--ds-cyan);
+}
+
+.auth-page .auth-brand-copy h1 {
+  font-size: 32px;
+}
+
+.auth-page .auth-intro {
+  padding: 12px 13px;
+  border-color: var(--ds-line);
+  background: linear-gradient(135deg, rgba(123,229,238,.045), rgba(143,125,255,.035));
+}
+
+.auth-page .auth-field > span {
+  color: var(--ds-text-3);
+}
+
+.auth-page .auth-submit {
+  min-height: 50px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--ds-cyan-strong), var(--ds-violet));
+  color: #061014;
+}
+
+.auth-page .auth-submit:hover {
+  filter: brightness(1.07) saturate(1.04);
+  box-shadow: 0 14px 34px rgba(70,200,216,.20);
+}
+
+/* ---------------------------------------------------------
+   CHAT FRAME
+--------------------------------------------------------- */
+
+.chat {
+  width: min(100%, 1280px);
+  height: min(850px, calc(100dvh - 44px));
+  min-height: 560px;
+  border-radius: 28px;
+  border-color: var(--ds-line-strong);
+  background: rgba(6, 13, 18, .97);
+  box-shadow: var(--ds-shadow), inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.chat::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 27px;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255,255,255,.022), transparent 18%, transparent 82%, rgba(123,229,238,.018));
+}
+
+.chat-content {
+  background:
+    linear-gradient(180deg, rgba(10,20,27,.78), rgba(5,11,16,.96));
+}
+
+/* ---------------------------------------------------------
+   SIDEBAR — PRODUCT RAIL
+--------------------------------------------------------- */
+
+.sidebar {
+  width: 300px;
+  flex-basis: 300px;
+  padding: 19px 15px 14px;
+  background:
+    linear-gradient(180deg, #091720 0%, #061118 100%);
+  border-right-color: var(--ds-line);
+}
+
+.pokinex-brand {
+  position: relative;
+  margin: 0 3px 14px;
+  padding: 4px 4px 12px;
+}
+
+.pokinex-brand::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ds-line-strong), transparent);
+}
+
+.pokinex-brand img {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  border-radius: 13px;
+}
+
+.pokinex-brand-copy strong {
+  font-size: 18px;
+}
+
+.profile-summary {
+  padding: 12px;
+  border-color: rgba(123,229,238,.08);
+  background: linear-gradient(135deg, rgba(123,229,238,.055), rgba(143,125,255,.035));
+}
+
+.profile-summary-copy {
+  gap: 1px;
+}
+
+.profile-edit-mark {
+  font-size: 12px;
+}
+
+.sidebar-section-heading {
+  margin: 22px 7px 9px;
+  font-size: 9px;
+  letter-spacing: .15em;
+}
+
+.users-count-badge {
+  border-color: rgba(123,229,238,.18);
+  background: rgba(123,229,238,.08);
+}
+
+.users {
+  padding-right: 2px;
+}
+
+.user {
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 13px;
+}
+
+.user:hover {
+  background: linear-gradient(90deg, rgba(123,229,238,.05), rgba(143,125,255,.025));
+  border-color: rgba(123,229,238,.08);
+}
+
+.user-info strong {
+  font-size: 13px;
+}
+
+.user-info > span {
+  font-size: 10px;
+}
+
+.sidebar-footer {
+  padding-top: 16px;
+}
+
+.history-button {
+  min-height: 48px;
+  border-color: rgba(123,229,238,.10);
+  background: rgba(123,229,238,.025);
+}
+
+.history-button:hover {
+  border-color: var(--ds-line-strong);
+  background: rgba(123,229,238,.07);
+}
+
+.history-button-icon {
+  background: rgba(123,229,238,.08);
+}
+
+.sidebar-signature img {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---------------------------------------------------------
+   HEADER — CHANNEL IDENTITY
+--------------------------------------------------------- */
+
+.chat-header {
+  min-height: 78px;
+  padding: 0 24px;
+  border-bottom-color: var(--ds-line);
+  background: rgba(6,13,18,.72);
+}
+
+.channel-brand {
+  gap: 12px;
+}
+
+.channel-brand-icon-wrap {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  border-radius: 12px;
+  border-color: var(--ds-line-strong);
+  background: linear-gradient(145deg, rgba(123,229,238,.07), rgba(143,125,255,.045));
+}
+
+.channel-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.channel-kicker {
+  color: var(--ds-text-4);
+  font-size: 8px;
+  letter-spacing: .16em;
+}
+
+.channel-brand-copy h1 {
+  font-size: 18px;
+}
+
+.channel-hash {
+  color: var(--ds-cyan);
+}
+
+.connection {
+  color: var(--ds-text-3);
+}
+
+.header-actions {
+  gap: 10px;
+}
+
+.header-badge {
+  height: 29px;
+  border-color: rgba(105,221,176,.16);
+  background: rgba(105,221,176,.05);
+}
+
+.logout {
+  min-height: 40px;
+  padding: 7px 13px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.018);
+}
+
+.logout:hover {
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+/* ---------------------------------------------------------
+   MESSAGE SURFACE
+--------------------------------------------------------- */
+
+.messages {
+  padding: 26px 28px 22px;
+  gap: 10px;
+}
+
+.message-bubble {
+  border-color: rgba(123,229,238,.065);
+  background: linear-gradient(180deg, #172733, #12202a);
+  border-radius: 16px;
+}
+
+.message-bubble:hover {
+  border-color: rgba(123,229,238,.13);
+}
+
+.message.mine .message-bubble {
+  background: linear-gradient(135deg, #37acba 0%, #6458d9 100%);
+}
+
+.message-user {
+  color: #9bb0bc;
+}
+
+.message-meta,
+.message-status,
+.message-time {
+  color: var(--ds-text-4);
+}
+
+.message.mine .message-meta,
+.message.mine .message-status,
+.message.mine .message-time {
+  color: rgba(237,253,255,.72);
+}
+
+.reply-preview {
+  border-left-color: var(--ds-violet);
+  background: rgba(143,125,255,.065);
+}
+
+.system-message {
+  background: rgba(123,229,238,.025);
+  border-color: rgba(123,229,238,.055);
+}
+
+/* ---------------------------------------------------------
+   COMPOSER — FOCUSED INPUT
+--------------------------------------------------------- */
+
+.composer-zone {
+  background: linear-gradient(180deg, rgba(7,14,20,.35), rgba(4,10,15,.88));
+}
+
+.message-form {
+  padding: 14px 19px 8px;
+  gap: 10px;
+  border-top-color: var(--ds-line);
+  background: transparent;
+}
+
+.composer-input-shell textarea {
+  min-height: 48px;
+  padding: 13px 15px 13px 31px;
+  border-radius: 15px;
+  border-color: rgba(123,229,238,.10);
+  background: rgba(4,9,14,.72);
+}
+
+.composer-input-shell textarea:hover {
+  border-color: rgba(123,229,238,.18);
+}
+
+.composer-input-shell textarea:focus {
+  border-color: rgba(123,229,238,.56);
+  box-shadow: 0 0 0 4px rgba(123,229,238,.065), 0 12px 30px rgba(0,0,0,.14);
+}
+
+.composer-state {
+  left: 12px;
+  top: 18px;
+}
+
+.composer-send {
+  min-width: 92px;
+  min-height: 48px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--ds-cyan-strong), var(--ds-violet));
+}
+
+.input-hint {
+  padding: 0 20px 11px;
+  color: var(--ds-text-4);
+}
+
+.reply-composer {
+  margin: 0 19px;
+  border-color: rgba(123,229,238,.11);
+  background: linear-gradient(90deg, rgba(123,229,238,.045), rgba(143,125,255,.035));
+}
+
+.reply-composer-accent {
+  background: linear-gradient(180deg, var(--ds-cyan), var(--ds-violet));
+}
+
+/* ---------------------------------------------------------
+   MODALS + CONTEXT MENUS
+--------------------------------------------------------- */
+
+.profile-overlay {
+  background: rgba(2,7,11,.78);
+}
+
+.profile-modal {
+  border-radius: 24px;
+  border-color: var(--ds-line-strong);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(123,229,238,.065), transparent 28%),
+    linear-gradient(180deg, #10202b, #07131b);
+}
+
+.profile-modal h2 {
+  font-size: 21px;
+}
+
+.profile-preview {
+  border-color: var(--ds-line);
+  background: linear-gradient(135deg, rgba(123,229,238,.045), rgba(143,125,255,.03));
+}
+
+.avatar-picker {
+  border-color: rgba(123,229,238,.14);
+  background: rgba(123,229,238,.018);
+}
+
+.message-context-menu,
+.message-reaction-picker {
+  border-color: var(--ds-line-strong) !important;
+  background: rgba(10,19,27,.96) !important;
+  box-shadow: 0 22px 55px rgba(0,0,0,.45), 0 0 24px rgba(123,229,238,.025) !important;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .chat {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .chat-header {
+    min-height: 62px;
+    padding: 0 11px 0 62px;
+  }
+
+  .channel-brand-icon-wrap {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .channel-brand-copy h1 {
+    font-size: 16px;
+  }
+
+  .channel-kicker {
+    display: none;
+  }
+
+  .header-actions .logout span:last-child {
+    display: none;
+  }
+
+  .header-actions .logout {
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+  }
+
+  .messages {
+    padding: 16px 10px 12px;
+  }
+
+  .composer-send {
+    width: 50px;
+    min-width: 50px;
+  }
+
+  .composer-send-icon {
+    font-size: 18px;
+  }
+
+  .sidebar-footer {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .auth-page .login {
+    width: 100%;
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 30px 20px 24px;
+  }
+}
