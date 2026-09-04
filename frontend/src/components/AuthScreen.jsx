@@ -29,41 +29,55 @@ export default function AuthScreen({ onAuthenticated }) {
 
   return (
     <main className="app auth-page">
-      <section className="login">
-        <div className="auth-brand">
-          <img src="/icone.png?v=2" alt="Pokinex" />
-          <div className="auth-brand-copy">
-            <div className="auth-kicker">POKINEX // PRIVATE SIGNAL</div>
-            <h1>Pokinex</h1>
-            <span>Conversa direta. Sinal em tempo real.</span>
+      <section className="auth-layout">
+        <div className="auth-visual">
+          <div className="auth-visual-brand">
+            <img src="/icone.png?v=2" alt="Pokinex" />
+            <span>Pokinex</span>
+          </div>
+          <div className="auth-visual-copy">
+            <span className="auth-kicker">CHAT • COMMUNITY • REALTIME</span>
+            <h1>Converse sem ruído.</h1>
+            <p>Um espaço simples para mensagens rápidas, presença online e conversas em tempo real.</p>
+          </div>
+          <div className="auth-visual-foot">
+            <span className="auth-visual-line" />
+            <span>PKX / 01</span>
           </div>
         </div>
 
-        <div className="auth-intro">
-          <span className="auth-status-dot" />
-          <p>{mode === "login" ? "Entre e retome sua conversa." : "Crie sua identidade na rede."}</p>
-        </div>
+        <section className="login">
+          <div className="auth-form-head">
+            <span className="auth-form-label">{mode === "login" ? "BEM-VINDO DE VOLTA" : "NOVO POR AQUI"}</span>
+            <h2>{mode === "login" ? "Entrar no Pokinex" : "Criar sua conta"}</h2>
+            <p>{mode === "login" ? "Acesse suas conversas e continue de onde parou." : "Crie uma identidade e entre na conversa."}</p>
+          </div>
 
-        {error && <div className="status disconnected">{error}</div>}
+          <div className="auth-live-row">
+            <span className="auth-status-dot" />
+            <span>Serviço operacional</span>
+          </div>
 
-        <form className="login-form" onSubmit={submit}>
-          <label className="auth-field">
-            <span>Identificador</span>
-            <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="Seu username" minLength={3} maxLength={20} autoComplete="username" autoFocus />
-          </label>
-          <label className="auth-field">
-            <span>Chave de acesso</span>
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Sua senha" minLength={8} maxLength={128} autoComplete={mode === "login" ? "current-password" : "new-password"} />
-          </label>
-          <button className="auth-submit" type="submit" disabled={loading}>
-            <span>{loading ? "Sincronizando..." : mode === "login" ? "Entrar na rede" : "Criar identidade"}</span>
-            <span aria-hidden="true">→</span>
-          </button>
-        </form>
+          {error && <div className="status disconnected">{error}</div>}
 
-        <div className="auth-divider"><span /><small>{mode === "login" ? "Novo na rede?" : "Já possui identidade?"}</small><span /></div>
-        <button className="auth-switch" type="button" onClick={switchMode}>{mode === "login" ? "Criar uma conta" : "Voltar para entrar"}</button>
-        <div className="auth-footer"><span>PKX / 01</span><span aria-hidden="true">•</span><span>WEBSOCKET</span><span aria-hidden="true">•</span><span>REALTIME</span></div>
+          <form className="login-form" onSubmit={submit}>
+            <label className="auth-field">
+              <span>Username</span>
+              <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="seu_username" minLength={3} maxLength={20} autoComplete="username" autoFocus />
+            </label>
+            <label className="auth-field">
+              <span>Senha</span>
+              <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Sua senha" minLength={8} maxLength={128} autoComplete={mode === "login" ? "current-password" : "new-password"} />
+            </label>
+            <button className="auth-submit" type="submit" disabled={loading}>
+              <span>{loading ? "Entrando..." : mode === "login" ? "Entrar" : "Criar conta"}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div className="auth-divider"><span /><small>{mode === "login" ? "Ainda não tem conta?" : "Já possui uma conta?"}</small><span /></div>
+          <button className="auth-switch" type="button" onClick={switchMode}>{mode === "login" ? "Criar conta" : "Voltar para entrar"}</button>
+        </section>
       </section>
     </main>
   );
