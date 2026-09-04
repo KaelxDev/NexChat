@@ -8,37 +8,27 @@ export default function ChatHeader({ connectionStatus, reconnectAttempt, reconne
 
   return (
     <header className="chat-header">
-      <div className="channel-brand">
-        <div className="channel-brand-icon-wrap">
-          <img src="/icone.png?v=2" alt="Pokinex" />
-        </div>
-        <div className="channel-brand-copy">
-          <div className="channel-kicker">POKINEX // REALTIME</div>
-          <h1><span className="channel-hash">#</span>geral</h1>
-          {connectionState === "reconnecting" ? (
-            <div className="connection connecting">
-              <span className="connection-dot" />
-              <span>Reconectando</span>
-              <small>tentativa #{reconnectAttempt || 1} · {reconnectSeconds || 10}s</small>
-            </div>
-          ) : connectionState === "connecting" ? (
-            <div className="connection connecting">
-              <span className="connection-dot" />
-              <span>Estabelecendo sinal...</span>
-            </div>
-          ) : (
-            <div className="connection connection-online">
-              <span className="connection-dot" />
-              <span>Sinal conectado</span>
-            </div>
-          )}
+      <div className="chat-header-main">
+        <div className="channel-symbol" aria-hidden="true">#</div>
+        <div className="channel-copy">
+          <div className="channel-title-row">
+            <h1>geral</h1>
+            <span className="channel-pill">PUBLICO</span>
+          </div>
+          <p className="channel-topic">Conversa principal do Pokinex</p>
         </div>
       </div>
 
-      <div className="header-actions">
-        <div className="header-badge" aria-label="WebSocket em tempo real">
-          <span className="header-badge-pulse" aria-hidden="true" />
-          <span>LIVE</span>
+      <div className="chat-header-status">
+        <div className={`connection connection-${connectionState}`}>
+          <span className="connection-dot" />
+          {connectionState === "reconnecting" ? (
+            <span>Reconectando · tentativa #{reconnectAttempt || 1} · {reconnectSeconds || 10}s</span>
+          ) : connectionState === "connecting" ? (
+            <span>Conectando...</span>
+          ) : (
+            <span>Online</span>
+          )}
         </div>
         <button className="logout" type="button" onClick={onLogout}>
           <span className="logout-icon" aria-hidden="true">↪</span>
