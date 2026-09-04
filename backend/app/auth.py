@@ -3,7 +3,11 @@ import hashlib
 import hmac
 import secrets
 
-from app.database import get_connection, using_postgres
+from app.database import (
+    _persistent_avatar_reference,
+    get_connection,
+    using_postgres,
+)
 
 SESSION_DAYS = 30
 PASSWORD_ITERATIONS = 600_000
@@ -117,7 +121,11 @@ def get_user_by_id(user_id: int, connection=None) -> dict | None:
             "id": user["id"],
             "username": user["username"],
             "displayName": user["display_name"],
-            "avatar": user["avatar"],
+            "avatar": _persistent_avatar_reference(
+                connection,
+                user["id"],
+                user["avatar"],
+            ),
             "status": user["status"],
         }
     finally:
@@ -138,19 +146,26 @@ def authenticate(username: str, password: str) -> dict | None:
             WHERE username = ? COLLATE NOCASE
         """
         user = connection.execute(query, (username.strip(),)).fetchone()
+        if not user or not verify_password(
+            password,
+            user["password_hash"],
+            user["password_salt"],
+        ):
+            return None
+
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "displayName": user["display_name"],
+            "avatar": _persistent_avatar_reference(
+                connection,
+                user["id"],
+                user["avatar"],
+            ),
+            "status": user["status"],
+        }
     finally:
         connection.close()
-
-    if not user or not verify_password(password, user["password_hash"], user["password_salt"]):
-        return None
-
-    return {
-        "id": user["id"],
-        "username": user["username"],
-        "displayName": user["display_name"],
-        "avatar": user["avatar"],
-        "status": user["status"],
-    }
 
 
 def create_session(user_id: int) -> str:
@@ -167,7 +182,10 @@ def create_session(user_id: int) -> str:
             INSERT INTO sessions (token_hash, user_id, expires_at, created_at)
             VALUES (?, ?, ?, ?)
         """
-        connection.execute(query, (token_hash, user_id, expires_at.isoformat(), created_at.isoformat()))
+        connection.execute(
+            query,
+            (token_hash, user_id, expires_at.isoformat(), created_at.isoformat()),
+        )
         connection.commit()
     finally:
         connection.close()
@@ -199,7 +217,11 @@ def get_user_from_token(token: str | None) -> dict | None:
         except (ValueError, TypeError):
             return None
         if expires_at <= now_utc():
-            delete_query = "DELETE FROM sessions WHERE token_hash = %s" if using_postgres() else "DELETE FROM sessions WHERE token_hash = ?"
+            delete_query = (
+                "DELETE FROM sessions WHERE token_hash = %s"
+                if using_postgres()
+                else "DELETE FROM sessions WHERE token_hash = ?"
+            )
             connection.execute(delete_query, (token_hash,))
             connection.commit()
             return None
@@ -207,7 +229,11 @@ def get_user_from_token(token: str | None) -> dict | None:
             "id": row["id"],
             "username": row["username"],
             "displayName": row["display_name"],
-            "avatar": row["avatar"],
+            "avatar": _persistent_avatar_reference(
+                connection,
+                row["id"],
+                row["avatar"],
+            ),
             "status": row["status"],
         }
     finally:
@@ -220,14 +246,24 @@ def delete_session(token: str | None) -> None:
     token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
     connection = get_connection()
     try:
-        query = "DELETE FROM sessions WHERE token_hash = %s" if using_postgres() else "DELETE FROM sessions WHERE token_hash = ?"
+        query = (
+            "DELETE FROM sessions WHERE token_hash = %s"
+            if using_postgres()
+            else "DELETE FROM sessions WHERE token_hash = ?"
+        )
         connection.execute(query, (token_hash,))
         connection.commit()
     finally:
         connection.close()
 
 
-def update_profile(user_id: int, username: str, display_name: str, avatar: str, status: str) -> dict | None:
+def update_profile(
+    user_id: int,
+    username: str,
+    display_name: str,
+    avatar: str,
+    status: str,
+) -> dict | None:
     username, error = validate_username(username)
     if error:
         raise ValueError(error)
