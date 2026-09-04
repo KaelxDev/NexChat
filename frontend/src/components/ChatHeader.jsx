@@ -10,10 +10,10 @@ export default function ChatHeader({ connectionStatus, reconnectAttempt, reconne
     <header className="chat-header">
       <div className="channel-brand">
         <div className="channel-brand-icon-wrap">
-          <img src="/icone.png?v=2" alt="" />
+          <img src="/icone.png?v=2" alt="Pokinex" />
         </div>
         <div className="channel-brand-copy">
-          <div className="channel-kicker">SALA PRINCIPAL</div>
+          <div className="channel-kicker">POKINEX // REALTIME</div>
           <h1><span className="channel-hash">#</span>geral</h1>
           {connectionState === "reconnecting" ? (
             <div className="connection connecting">
@@ -24,12 +24,12 @@ export default function ChatHeader({ connectionStatus, reconnectAttempt, reconne
           ) : connectionState === "connecting" ? (
             <div className="connection connecting">
               <span className="connection-dot" />
-              <span>Conectando...</span>
+              <span>Estabelecendo sinal...</span>
             </div>
           ) : (
             <div className="connection connection-online">
               <span className="connection-dot" />
-              <span>Conectado em tempo real</span>
+              <span>Sinal conectado</span>
             </div>
           )}
         </div>
