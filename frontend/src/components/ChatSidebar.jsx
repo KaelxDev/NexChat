@@ -1,8 +1,8 @@
-import { userInitial } from "../utils/chat";
+import { normalizeAvatarUrl, userInitial } from "../utils/chat";
 
 export default function ChatSidebar({ user, profile, users, onOpenProfile, onClearHistory }) {
   const displayName = profile?.displayName || user?.displayName || user?.username || "Usuário";
-  const avatar = profile?.avatar || "";
+  const avatar = normalizeAvatarUrl(profile?.avatar || user?.avatar, user?.id);
 
   return (
     <aside className="sidebar">
@@ -14,30 +14,34 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
           <div>
             <h2>{displayName}</h2>
             <p>@{user.username}</p>
-            <small>{profile?.status || "Sem status"}</small>
+            <small>{profile?.status || user?.status || "Sem status"}</small>
           </div>
         </button>
       </div>
 
       <div className="users-title">Usuários online — {users.length}</div>
       <ul className="users">
-        {users.map((onlineUser) => (
-          <li className="user" key={onlineUser.id}>
-            <div className="avatar user-avatar">
-              {onlineUser.avatar ? (
-                <img src={onlineUser.avatar} alt="" />
-              ) : (
-                userInitial(onlineUser)
-              )}
-            </div>
-            <div className="user-info">
-              <strong>{onlineUser.displayName || onlineUser.username}</strong>
-              <span>
-                <span className="online-dot" />@{onlineUser.username}
-              </span>
-            </div>
-          </li>
-        ))}
+        {users.map((onlineUser) => {
+          const onlineAvatar = normalizeAvatarUrl(onlineUser.avatar, onlineUser.id);
+
+          return (
+            <li className="user" key={onlineUser.id}>
+              <div className="avatar user-avatar">
+                {onlineAvatar ? (
+                  <img src={onlineAvatar} alt="" />
+                ) : (
+                  userInitial(onlineUser)
+                )}
+              </div>
+              <div className="user-info">
+                <strong>{onlineUser.displayName || onlineUser.username}</strong>
+                <span>
+                  <span className="online-dot" />@{onlineUser.username}
+                </span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       <button className="logout" type="button" onClick={onClearHistory}>
