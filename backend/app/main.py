@@ -14,9 +14,11 @@ from app.routes.auth import router as auth_router
 from app.routes.messages import router as messages_router
 from app.security import ALLOWED_ORIGINS, is_allowed_origin
 from app.websocket.chat import manager
+from app.websocket.direct_messages import send_direct_message
 from app.websocket.schemas import (
     ChatMessageEvent,
     DeleteMessageEvent,
+    DirectMessageEvent,
     EditMessageEvent,
     ReactionEvent,
 )
@@ -85,6 +87,7 @@ async def _send_validation_error(
         "literal_error": "Valor não permitido.",
         "missing": "Campo obrigatório ausente.",
         "string_type": "Campo de texto inválido.",
+        "greater_than": "Identificador inválido.",
     }
     message = messages.get(error_type, "Dados do evento inválidos.")
 
@@ -166,6 +169,27 @@ async def websocket_endpoint(websocket: WebSocket):
                     event.messageId,
                     websocket,
                     event.replyTo,
+                )
+                continue
+
+            if event_type == "direct_message":
+                try:
+                    event = DirectMessageEvent.model_validate(data)
+                except ValidationError as error:
+                    await _send_validation_error(websocket, "direct_message", error)
+                    continue
+
+                message = event.message.strip()
+                if not message:
+                    continue
+
+                await send_direct_message(
+                    manager,
+                    user,
+                    event.recipientId,
+                    message,
+                    event.messageId,
+                    websocket,
                 )
                 continue
 
