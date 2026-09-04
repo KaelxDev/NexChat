@@ -50,17 +50,32 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
           {users.map((onlineUser) => {
             const onlineAvatar = normalizeAvatarUrl(onlineUser.avatar, onlineUser.id);
             const name = onlineUser.displayName || onlineUser.username;
+            const isSelf = String(onlineUser.id) === String(user?.id);
 
             return (
               <li className="user" key={onlineUser.id}>
-                <div className="avatar user-avatar">
-                  {onlineAvatar ? <img src={onlineAvatar} alt="" /> : userInitial(onlineUser)}
-                  <span className="user-online-indicator" aria-hidden="true" />
-                </div>
-                <div className="user-info">
-                  <strong>{name}</strong>
-                  <span>@{onlineUser.username}</span>
-                </div>
+                <button
+                  className={`user-dm-trigger${isSelf ? " self" : ""}`}
+                  type="button"
+                  data-dm-user-id={onlineUser.id}
+                  data-dm-username={onlineUser.username}
+                  data-dm-display-name={name}
+                  data-dm-avatar={onlineAvatar || ""}
+                  data-dm-online={String(Boolean(onlineUser.online ?? true))}
+                  data-dm-self={String(isSelf)}
+                  disabled={isSelf}
+                  title={isSelf ? "Você" : `Enviar mensagem privada para ${name}`}
+                >
+                  <div className="avatar user-avatar">
+                    {onlineAvatar ? <img src={onlineAvatar} alt="" /> : userInitial(onlineUser)}
+                    <span className="user-online-indicator" aria-hidden="true" />
+                  </div>
+                  <div className="user-info">
+                    <strong>{name}</strong>
+                    <span>@{onlineUser.username}</span>
+                  </div>
+                  {!isSelf && <span className="user-dm-hint" aria-hidden="true">✉</span>}
+                </button>
               </li>
             );
           })}
