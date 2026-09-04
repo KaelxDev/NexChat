@@ -1,3 +1,4 @@
+import { me } from "./auth";
 import { notifyDirectMessage } from "../notifications";
 
 const DEFAULT_WS_URL = "wss://nexchat-backend-2cyf.onrender.com/ws";
@@ -7,28 +8,6 @@ const RECONNECT_INTERVAL = 10000;
 const AUTH_CLOSE_CODE = 1008;
 const AUTH_CLOSE_REASON = "authentication required";
 
-let currentUserIdPromise = null;
-
-async function getCurrentUserId() {
-  if (!currentUserIdPromise) {
-    currentUserIdPromise = fetch(
-      `${import.meta.env.VITE_API_URL || "https://nexchat-backend-2cyf.onrender.com/api/auth"}/me`,
-      { credentials: "include" },
-    )
-      .then((response) => response.json().catch(() => null))
-      .then((data) => {
-        const id = Number(data?.user?.id);
-        if (!Number.isFinite(id)) throw new Error("Sessão não identificada");
-        return id;
-      })
-      .catch((error) => {
-        currentUserIdPromise = null;
-        throw error;
-      });
-  }
-  return currentUserIdPromise;
-}
-
 export function createWebSocket(
   _legacyToken,
   { onMessage, onOpen, onClose, onError, onReconnecting, onAuthenticationRequired } = {},
@@ -37,6 +16,7 @@ export function createWebSocket(
   let reconnectTimer = null;
   let reconnectAttempt = 0;
   let manuallyClosed = false;
+  const currentUserIdPromise = me().then((user) => Number(user?.id));
 
   function connect() {
     if (manuallyClosed) return;
@@ -50,13 +30,14 @@ export function createWebSocket(
       try {
         const data = JSON.parse(event.data);
         if (data?.type === "direct_message") {
-          void getCurrentUserId()
+          void currentUserIdPromise
             .then((currentUserId) => {
               const senderId = Number(data.senderId ?? data.userId);
               const recipientId = Number(data.recipientId);
               if (
                 Number.isFinite(senderId) &&
                 Number.isFinite(recipientId) &&
+                Number.isFinite(currentUserId) &&
                 recipientId === currentUserId &&
                 senderId !== currentUserId
               ) {
@@ -68,7 +49,9 @@ export function createWebSocket(
                 });
               }
             })
-            .catch(() => {});
+            .catch((error) => {
+              console.debug("Não foi possível identificar a sessão para a notificação DM:", error);
+            });
         }
         onMessage?.(data);
       } catch (error) {
