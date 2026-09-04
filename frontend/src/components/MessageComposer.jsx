@@ -5,11 +5,8 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
         <div className="reply-composer">
           <div className="reply-composer-accent" aria-hidden="true" />
           <div className="reply-composer-content">
-            <div className="reply-composer-label">
-              <span>↩</span>
-              <strong>Respondendo a {replyingTo.displayName || replyingTo.username}</strong>
-            </div>
-            <span>{replyingTo.deleted ? "Esta mensagem foi excluída" : replyingTo.message}</span>
+            <span className="reply-composer-label">Respondendo a {replyingTo.displayName || replyingTo.username}</span>
+            <strong>{replyingTo.deleted ? "Esta mensagem foi excluída" : replyingTo.message}</strong>
           </div>
           <button type="button" onClick={onCancelReply} aria-label="Cancelar resposta">✕</button>
         </div>
@@ -20,7 +17,7 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
           <span className={`composer-state ${connected ? "ready" : "offline"}`} aria-hidden="true" />
           <textarea
             aria-label={replyingTo ? "Digite sua resposta" : "Digite sua mensagem"}
-            placeholder={connected ? (replyingTo ? "Transmitir resposta..." : "Transmitir mensagem...") : "Sem sinal — armazenando para envio posterior..."}
+            placeholder={connected ? (replyingTo ? "Escreva sua resposta..." : "Envie uma mensagem para #geral") : "Você está offline. A mensagem ficará na fila."}
             value={messageInput}
             onChange={(event) => onChange(event.target.value)}
             rows={1}
@@ -34,15 +31,15 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
           />
         </div>
         <button className="composer-send" type="submit" disabled={!messageInput.trim()} aria-label="Enviar mensagem">
-          <span className="composer-send-label">Transmitir</span>
+          <span className="composer-send-label">Enviar</span>
           <span className="composer-send-icon" aria-hidden="true">↑</span>
         </button>
       </form>
 
       <div className="input-hint">
-        <span>ENTER transmite · SHIFT + ENTER nova linha</span>
+        <span>Enter envia · Shift + Enter quebra a linha</span>
         <span className={offlineQueueLength ? "queue-active" : ""}>
-          {offlineQueueLength ? `◌ ${offlineQueueLength} em fila` : connected ? "● Sinal estável" : "○ Sem sinal"}
+          {offlineQueueLength ? `${offlineQueueLength} pendente(s)` : connected ? "Conectado" : "Offline"}
         </span>
       </div>
     </div>
