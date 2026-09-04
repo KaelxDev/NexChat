@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { onDirectMessage, onDirectMessageRead, markDirectMessageRead } from "../notifications";
+import { normalizeAvatarUrl, userInitial } from "../utils/chat";
 
 export default function DirectMessageNotificationCenter() {
   const [messages, setMessages] = useState([]);
@@ -10,8 +11,14 @@ export default function DirectMessageNotificationCenter() {
       const senderId = Number(message?.senderId ?? message?.userId);
       if (!Number.isFinite(senderId)) return;
 
+      const enriched = {
+        ...message,
+        senderId,
+        avatar: normalizeAvatarUrl(message?.avatar, senderId),
+      };
+
       setMessages((current) => {
-        const next = [{ ...message, senderId }, ...current.filter((item) => item.messageId !== message.messageId)];
+        const next = [enriched, ...current.filter((item) => item.messageId !== message.messageId)];
         return next.slice(0, 30);
       });
     });
@@ -74,7 +81,17 @@ export default function DirectMessageNotificationCenter() {
                   onClick={() => openMessage(message)}
                 >
                   <span className="dm-notification-item-avatar">
-                    {message.avatar ? <img src={message.avatar} alt="" /> : String(message.displayName || "U").slice(0, 1).toUpperCase()}
+                    {message.avatar ? (
+                      <img
+                        src={message.avatar}
+                        alt=""
+                        onError={(event) => {
+                          event.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      userInitial(message)
+                    )}
                   </span>
                   <span className="dm-notification-item-copy">
                     <strong>{message.displayName || message.username || "Usuário"}</strong>
