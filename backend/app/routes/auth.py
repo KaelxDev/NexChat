@@ -175,7 +175,9 @@ def avatar(user_id: int):
         return Response(
             content=content,
             media_type=content_type,
-            headers={"Cache-Control": "public, max-age=86400"},
+            headers={
+                "Cache-Control": "private, no-cache, must-revalidate",
+            },
         )
 
     raise HTTPException(
@@ -224,7 +226,7 @@ async def upload_avatar(
         content_type,
     )
     avatar_url = str(request.base_url).rstrip("/") + avatar_path
-    return {"avatar": avatar_url}
+    return {"avatar": avatar_url + f"?v={int(__import__('time').time() * 1000)}"}
 
 
 @router.patch("/profile")
