@@ -23,18 +23,28 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
                 m.reply_to_message_id,
                 u.username,
                 u.display_name,
-                u.avatar,
+                CASE
+                    WHEN ua.user_id IS NOT NULL THEN
+                        '/api/auth/avatar/' || CAST(u.id AS TEXT) || '?v=' || ua.updated_at
+                    ELSE u.avatar
+                END AS avatar,
                 r.message_id AS reply_message_id,
                 r.user_id AS reply_user_id,
                 r.message AS reply_message,
                 r.deleted_at AS reply_deleted_at,
                 ru.username AS reply_username,
                 ru.display_name AS reply_display_name,
-                ru.avatar AS reply_avatar
+                CASE
+                    WHEN rua.user_id IS NOT NULL THEN
+                        '/api/auth/avatar/' || CAST(ru.id AS TEXT) || '?v=' || rua.updated_at
+                    ELSE ru.avatar
+                END AS reply_avatar
             FROM messages m
             JOIN users u ON u.id = m.user_id
+            LEFT JOIN user_avatars ua ON ua.user_id = u.id
             LEFT JOIN messages r ON r.message_id = m.reply_to_message_id
             LEFT JOIN users ru ON ru.id = r.user_id
+            LEFT JOIN user_avatars rua ON rua.user_id = ru.id
             WHERE 1 = 1
             {before_clause}
             ORDER BY m.created_at DESC, m.message_id DESC
@@ -75,7 +85,7 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
                 "userId": row["user_id"],
                 "username": row["username"],
                 "displayName": row["display_name"],
-                "avatar": row["avatar"],
+                "avatar": row["avatar"] or "",
                 "message": "Esta mensagem foi excluída" if row["deleted_at"] else row["message"],
                 "timestamp": row["created_at"],
                 "edited": bool(row["edited_at"]),
@@ -93,7 +103,7 @@ def get_message_history(limit: int = 50, before: str | None = None) -> dict:
                     "userId": row["reply_user_id"],
                     "username": row["reply_username"],
                     "displayName": row["reply_display_name"],
-                    "avatar": row["reply_avatar"],
+                    "avatar": row["reply_avatar"] or "",
                     "message": "Esta mensagem foi excluída"
                     if row["reply_deleted_at"]
                     else row["reply_message"],
