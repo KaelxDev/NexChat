@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { onDirectMessage } from "../notifications";
+import { normalizeAvatarUrl, userInitial } from "../utils/chat";
 
 function playNotificationSound() {
   try {
@@ -15,7 +16,6 @@ function playNotificationSound() {
     oscillator.frequency.exponentialRampToValueAtTime(980, context.currentTime + 0.09);
     gain.gain.setValueAtTime(0.0001, context.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.07, context.currentTime + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.18);
 
     oscillator.connect(gain);
     gain.connect(context.destination);
@@ -32,13 +32,17 @@ export default function DirectMessageNotifier() {
 
   useEffect(() => {
     return onDirectMessage((message) => {
+      const senderId = Number(message?.senderId ?? message?.userId);
+      if (!Number.isFinite(senderId)) return;
+
+      const displayName = message?.displayName || message?.username || "Usuário";
       const normalized = {
         ...message,
-        senderId: Number(message?.senderId ?? message?.userId),
-        displayName: message?.displayName || message?.username || "Usuário",
+        senderId,
+        userId: senderId,
+        displayName,
+        avatar: normalizeAvatarUrl(message?.avatar, senderId),
       };
-
-      if (!Number.isFinite(normalized.senderId)) return;
 
       setToast(normalized);
       playNotificationSound();
@@ -52,7 +56,7 @@ export default function DirectMessageNotifier() {
         try {
           new Notification(normalized.displayName, {
             body: normalized.message || "Nova mensagem privada",
-            icon: "/icone.png",
+            icon: normalized.avatar || "/icone.png",
             tag: `pokinex-dm-${normalized.senderId}`,
           });
         } catch (error) {
@@ -97,12 +101,19 @@ export default function DirectMessageNotifier() {
     >
       <span className="dm-notification-avatar">
         {toast.avatar ? (
-          <img src={toast.avatar} alt="" />
+          <img
+            src={toast.avatar}
+            alt=""
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
         ) : (
-          String(toast.displayName || "U").slice(0, 1).toUpperCase()
+          userInitial(toast)
         )}
       </span>
       <span className="dm-notification-copy">
+        <small>MENSAGEM PRIVADA</small>
         <strong>{toast.displayName}</strong>
         <span>{toast.message || "Nova mensagem privada"}</span>
       </span>
