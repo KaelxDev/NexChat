@@ -80,11 +80,14 @@ def _persistent_avatar_reference(connection, user_id, fallback=""):
         "SELECT updated_at FROM user_avatars WHERE user_id = ?",
     )
     row = connection.execute(query, (user_id,)).fetchone()
-    if not row:
-        return fallback or ""
+    if row:
+        version = str(row["updated_at"] or "")
+        return f"/api/auth/avatar/{user_id}?v={version}" if version else f"/api/auth/avatar/{user_id}"
 
-    version = str(row["updated_at"] or "")
-    return f"/api/auth/avatar/{user_id}?v={version}" if version else f"/api/auth/avatar/{user_id}"
+    fallback_value = str(fallback or "").strip()
+    if fallback_value.startswith("/api/auth/avatar/") or fallback_value.startswith("/media/"):
+        return ""
+    return fallback_value
 
 
 def _profile_from_row(connection, row):
