@@ -28,6 +28,10 @@ export function normalizeAvatarUrl(avatar, userId = null) {
   const value = String(avatar || "").trim();
   if (!value) return "";
 
+  if (value === "/pokibot-icon.jpg" || value === "pokibot-icon.jpg") {
+    return "/pokibot-icon.jpg";
+  }
+
   if (value.startsWith("data:") || value.startsWith("blob:")) return value;
 
   try {
