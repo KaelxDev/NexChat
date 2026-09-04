@@ -24,7 +24,7 @@ import './MessagePresentationFix.css'
 import './MessageAvatarFix.css'
 import './MessageFlowFix.css'
 import './PrivateDM.css'
-import './PrivateDMActions.css'
+import './components/PrivateDMActions.css'
 import './MobileShell.css'
 import './MobileDrawerFinal.css'
 import './DirectMessageNotification.css'
@@ -46,5 +46,5 @@ createRoot(document.getElementById('root')).render(
     <DirectMessageNotifier />
     <DirectMessageNotificationBridge />
     <DirectMessageNotificationCenter />
-  </StrictMode>,
+  </StrictMode>
 )
