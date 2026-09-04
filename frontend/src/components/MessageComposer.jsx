@@ -1,4 +1,18 @@
+import { useEffect, useRef } from "react";
+
 export default function MessageComposer({ connected, offlineQueueLength, replyingTo, messageInput, onChange, onSubmit, onCancelReply }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "44px";
+    const nextHeight = Math.min(textarea.scrollHeight, 150);
+    textarea.style.height = `${Math.max(44, nextHeight)}px`;
+    textarea.scrollTop = textarea.scrollHeight;
+  }, [messageInput]);
+
   return (
     <div className="composer-zone">
       {replyingTo && (
@@ -14,8 +28,8 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
 
       <form className="message-form" onSubmit={onSubmit}>
         <div className="composer-input-shell">
-          <span className={`composer-state ${connected ? "ready" : "offline"}`} aria-hidden="true" />
           <textarea
+            ref={textareaRef}
             aria-label={replyingTo ? "Digite sua resposta" : "Digite sua mensagem"}
             placeholder={connected ? (replyingTo ? "Escreva sua resposta..." : "Envie uma mensagem para #geral") : "Você está offline. A mensagem ficará na fila."}
             value={messageInput}
