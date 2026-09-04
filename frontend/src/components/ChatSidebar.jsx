@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { normalizeAvatarUrl, userInitial } from "../utils/chat";
+import { onDirectMessage, onDirectMessageRead, markDirectMessageRead } from "../notifications";
 
 export default function ChatSidebar({ user, profile, users, onOpenProfile, onClearHistory }) {
   const displayName = profile?.displayName || user?.displayName || user?.username || "Usuário";
   const avatar = normalizeAvatarUrl(profile?.avatar || user?.avatar, user?.id);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadByUser, setUnreadByUser] = useState({});
 
   useEffect(() => {
     const toggle = () => setMobileOpen((current) => !current);
@@ -21,6 +23,36 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
     };
   }, []);
 
+  useEffect(() => {
+    const offIncoming = onDirectMessage((message) => {
+      const senderId = Number(message?.senderId ?? message?.userId);
+      if (!Number.isFinite(senderId) || senderId === Number(user?.id)) return;
+      setUnreadByUser((current) => ({
+        ...current,
+        [senderId]: (current[senderId] || 0) + 1,
+      }));
+    });
+
+    const offRead = onDirectMessageRead(({ userId }) => {
+      if (userId == null) return;
+      setUnreadByUser((current) => {
+        const next = { ...current };
+        delete next[userId];
+        return next;
+      });
+    });
+
+    return () => {
+      offIncoming();
+      offRead();
+    };
+  }, [user?.id]);
+
+  const unreadTotal = useMemo(
+    () => Object.values(unreadByUser).reduce((sum, count) => sum + Number(count || 0), 0),
+    [unreadByUser],
+  );
+
   function closeMobileSidebar() {
     window.dispatchEvent(new CustomEvent("pokinex:mobile-sidebar-close"));
   }
@@ -30,7 +62,9 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
     onOpenProfile();
   }
 
-  function handleDMClick() {
+  function handleDMClick(event) {
+    const userId = Number(event.currentTarget.dataset.dmUserId);
+    if (Number.isFinite(userId)) markDirectMessageRead(userId);
     closeMobileSidebar();
   }
 
@@ -74,7 +108,7 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
 
           <div className="sidebar-heading">
             <span>Conversas</span>
-            <span className="sidebar-heading-count">1</span>
+            <span className="sidebar-heading-count">{1 + unreadTotal}</span>
           </div>
 
           <button className="channel-entry active" type="button" onClick={closeMobileSidebar}>
@@ -96,9 +130,10 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
               const onlineAvatar = normalizeAvatarUrl(onlineUser.avatar, onlineUser.id);
               const name = onlineUser.displayName || onlineUser.username;
               const isSelf = String(onlineUser.id) === String(user?.id);
+              const unread = Number(unreadByUser[onlineUser.id] || 0);
 
               return (
-                <li className="user" key={onlineUser.id}>
+                <li className={`user${unread ? " has-dm-unread" : ""}`} key={onlineUser.id}>
                   <button
                     className={`user-dm-trigger${isSelf ? " self" : ""}`}
                     type="button"
@@ -120,7 +155,11 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
                       <strong>{name}</strong>
                       <span>@{onlineUser.username}</span>
                     </div>
-                    {!isSelf && <span className="user-dm-hint" aria-hidden="true">✉</span>}
+                    {!isSelf && (
+                      <span className="user-dm-meta" aria-hidden="true">
+                        {unread > 0 ? <b className="dm-unread-badge">{unread > 99 ? "99+" : unread}</b> : <span className="user-dm-hint">✉</span>}
+                      </span>
+                    )}
                   </button>
                 </li>
               );
