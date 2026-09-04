@@ -11,7 +11,7 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
           <img src="/icone.png?v=2" alt="" />
           <div className="pokinex-brand-copy">
             <strong>Pokinex</strong>
-            <span>Comunicação em tempo real</span>
+            <span>signal network</span>
           </div>
         </div>
 
@@ -32,7 +32,7 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
       </div>
 
       <div className="sidebar-section-heading">
-        <span>Conectados agora</span>
+        <span>Sinal ativo</span>
         <span className="users-count-badge">{users.length}</span>
       </div>
 
@@ -44,11 +44,7 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
           return (
             <li className="user" key={onlineUser.id}>
               <div className="avatar user-avatar">
-                {onlineAvatar ? (
-                  <img src={onlineAvatar} alt="" />
-                ) : (
-                  userInitial(onlineUser)
-                )}
+                {onlineAvatar ? <img src={onlineAvatar} alt="" /> : userInitial(onlineUser)}
                 <span className="user-online-indicator" aria-hidden="true" />
               </div>
               <div className="user-info">
@@ -70,7 +66,7 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
         </button>
         <div className="sidebar-signature">
           <img src="/icone.png?v=2" alt="" />
-          <span>Pokinex</span>
+          <span>PKX / 01</span>
         </div>
       </div>
     </aside>
