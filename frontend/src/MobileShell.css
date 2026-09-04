@@ -1,18 +1,43 @@
-/* Pokinex mobile shell: the phone gets its own navigation model. */
+/* Pokinex mobile shell: phone-first navigation and chat layout. */
+
+.mobile-sidebar-header {
+  display: none;
+}
 
 @media (max-width: 700px) {
   :root {
     --mobile-bar-height: 60px;
-    --mobile-composer-height: 68px;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    overscroll-behavior: none;
+  }
+
+  .app,
+  .chat {
+    width: 100vw;
+    height: 100dvh;
+    min-height: 100dvh;
+    padding: 0;
+    overflow: hidden;
   }
 
   .chat {
     position: relative;
     display: block !important;
-    width: 100vw;
-    height: 100dvh;
-    min-height: 100dvh;
-    overflow: hidden;
+    border: 0;
+    border-radius: 0;
   }
 
   .chat-content {
@@ -27,24 +52,62 @@
   .chat-header {
     position: relative;
     z-index: 30;
+    display: flex;
     flex: 0 0 var(--mobile-bar-height);
     min-height: var(--mobile-bar-height);
     height: var(--mobile-bar-height);
-    padding: max(8px, env(safe-area-inset-top)) 10px 8px;
+    padding: max(8px, env(safe-area-inset-top)) 9px 8px;
   }
 
-  .chat-header-main {
+  .chat-header-main,
+  .chat-header-status,
+  .channel-copy {
     min-width: 0;
   }
 
+  .chat-header-main {
+    display: flex;
+    align-items: center;
+  }
+
+  .chat-menu-toggle {
+    display: inline-flex;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #f5f7fa;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .channel-topic,
+  .channel-pill {
+    display: none;
+  }
+
+  .channel-title-row h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+  }
+
   .chat-header-status {
+    display: flex;
+    align-items: center;
     gap: 6px;
   }
 
   .connection {
-    max-width: 42px;
-    min-width: 42px;
-    width: 42px;
+    width: 38px;
+    min-width: 38px;
+    max-width: 38px;
     height: 36px;
     overflow: hidden;
     justify-content: center;
@@ -54,7 +117,6 @@
   }
 
   .connection-dot {
-    flex: 0 0 7px;
     width: 7px;
     height: 7px;
   }
@@ -77,7 +139,19 @@
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
-    padding: 12px 10px 10px;
+    padding: 10px 9px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  .message {
+    max-width: min(92%, 420px) !important;
+  }
+
+  .message-bubble {
+    max-width: 100% !important;
+    font-size: 15px !important;
   }
 
   .composer-zone {
@@ -139,28 +213,13 @@
   .auto-message-scroll-shell,
   .auto-message-scroll-content {
     min-height: 0;
-    height: auto;
-  }
-}
-
-@media (max-width: 520px) {
-  .chat-header {
-    padding-inline: 8px;
-  }
-
-  .channel-topic,
-  .channel-pill {
-    display: none;
-  }
-
-  .channel-title-row h1 {
-    font-size: 16px;
   }
 
   .sidebar {
     position: fixed !important;
     inset: 0 auto 0 0;
     z-index: 100;
+    display: flex !important;
     width: min(88vw, 320px) !important;
     height: 100dvh !important;
     flex: none !important;
@@ -176,29 +235,110 @@
     transform: translateX(0);
   }
 
+  .sidebar-rail {
+    display: none;
+  }
+
+  .sidebar-main {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .mobile-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    margin-bottom: 6px;
+    color: #f5f7fa;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .mobile-sidebar-header button {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #f5f7fa;
+    font-size: 18px;
+  }
+
   .mobile-sidebar-backdrop {
     position: fixed;
     inset: 0;
     z-index: 90;
+    width: 100vw;
+    height: 100dvh;
+    padding: 0;
+    border: 0;
     background: rgba(3, 4, 7, 0.72);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
   }
 
-  .messages {
-    padding-inline: 8px;
+  .user-dm-trigger {
+    min-height: 54px;
+    width: 100%;
   }
 
-  .message {
-    max-width: 92% !important;
+  .profile-summary,
+  .history-button,
+  .channel-entry {
+    min-height: 52px;
   }
 
-  .message-bubble {
-    font-size: 15px !important;
+  .profile-modal {
+    width: min(100%, 520px);
+    max-height: min(92dvh, 760px);
+    border-radius: 20px 20px 0 0;
+  }
+
+  .message-context-menu {
+    min-width: min(240px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+  }
+
+  .message-context-menu button {
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  .message-reaction-picker {
+    max-width: calc(100vw - 20px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message-reaction-picker button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .new-message-indicator {
+    right: 12px !important;
+    left: auto !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    transform: none !important;
   }
 }
 
 @media (max-width: 380px) {
+  .chat-header {
+    padding-inline: 7px;
+  }
+
+  .chat-menu-toggle {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    margin-right: 6px;
+  }
+
   .message-form {
     grid-template-columns: minmax(0, 1fr) 44px;
   }
@@ -206,5 +346,18 @@
   .composer-send {
     width: 44px;
     min-width: 44px;
+  }
+
+  .messages {
+    padding-inline: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .message,
+  .message-context-menu {
+    transition: none !important;
+    animation: none !important;
   }
 }
