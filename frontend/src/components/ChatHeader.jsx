@@ -9,10 +9,9 @@ export default function ChatHeader({ connectionStatus, reconnectAttempt, reconne
   return (
     <header className="chat-header">
       <div className="chat-header-main">
-        <div className="channel-symbol" aria-hidden="true">#</div>
         <div className="channel-copy">
           <div className="channel-title-row">
-            <h1>geral</h1>
+            <h1><span className="channel-hash">#</span> geral</h1>
             <span className="channel-pill">PUBLICO</span>
           </div>
           <p className="channel-topic">Conversa principal do Pokinex</p>
