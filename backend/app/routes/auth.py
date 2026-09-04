@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+from functools import partial
+
 from anyio import to_thread
 from fastapi import APIRouter, File, Header, HTTPException, Request, Response, UploadFile, status
 from pydantic import BaseModel, Field
@@ -193,10 +196,12 @@ async def upload_avatar(
     authorization: str | None = Header(default=None),
 ):
     _, user = await to_thread.run_sync(
-        require_user,
-        request,
-        authorization,
-        require_origin=True,
+        partial(
+            require_user,
+            request,
+            authorization,
+            require_origin=True,
+        ),
     )
 
     content_type = file.content_type or ""
@@ -236,10 +241,12 @@ async def profile(
     authorization: str | None = Header(default=None),
 ):
     _, user = await to_thread.run_sync(
-        require_user,
-        request,
-        authorization,
-        require_origin=True,
+        partial(
+            require_user,
+            request,
+            authorization,
+            require_origin=True,
+        ),
     )
     try:
         updated = await to_thread.run_sync(
