@@ -1,0 +1,259 @@
+/* =========================================================
+   POKINEX — BRAND IDENTITY
+   Primeira camada visual oficial do produto.
+========================================================= */
+
+:root {
+  --brand-ink: #071018;
+  --brand-bg: #091017;
+  --brand-surface: #101a24;
+  --brand-surface-raised: #14212d;
+  --brand-border: rgba(116, 211, 227, 0.14);
+  --brand-border-strong: rgba(116, 211, 227, 0.24);
+
+  --brand-primary: #63d8e8;
+  --brand-primary-strong: #42c4d8;
+  --brand-secondary: #8b7cff;
+  --brand-primary-soft: rgba(99, 216, 232, 0.12);
+  --brand-secondary-soft: rgba(139, 124, 255, 0.12);
+  --brand-glow: rgba(99, 216, 232, 0.18);
+
+  --brand-text: #f5fbff;
+  --brand-text-muted: #91a4b4;
+  --brand-text-subtle: #627788;
+
+  --brand-radius-sm: 10px;
+  --brand-radius-md: 14px;
+  --brand-radius-lg: 20px;
+
+  --brand-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(99, 216, 232, 0.07), transparent 28%),
+    radial-gradient(circle at 88% 100%, rgba(139, 124, 255, 0.07), transparent 30%),
+    var(--brand-bg);
+}
+
+.chat,
+.login {
+  border-color: var(--brand-border);
+  box-shadow: var(--brand-shadow);
+}
+
+.chat {
+  background:
+    linear-gradient(180deg, rgba(16, 26, 36, 0.985), rgba(10, 16, 23, 0.985));
+}
+
+.chat-content {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(99, 216, 232, 0.045), transparent 26%),
+    radial-gradient(circle at 0% 100%, rgba(139, 124, 255, 0.035), transparent 24%);
+}
+
+.sidebar {
+  background:
+    linear-gradient(180deg, #0d1720 0%, #0a121a 100%);
+  border-right-color: var(--brand-border);
+}
+
+.sidebar-header {
+  margin-bottom: 18px;
+}
+
+.pokinex-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 4px 2px;
+}
+
+.pokinex-brand img {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--brand-border-strong), 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+.pokinex-brand-copy {
+  min-width: 0;
+}
+
+.pokinex-brand-copy strong {
+  display: block;
+  color: var(--brand-text);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pokinex-brand-copy span {
+  display: block;
+  margin-top: 1px;
+  color: var(--brand-text-subtle);
+  font-size: 11px;
+}
+
+.profile-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px;
+  margin: 0;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid transparent;
+  border-radius: var(--brand-radius-md);
+  color: inherit;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.profile-summary:hover {
+  background: var(--brand-primary-soft);
+  border-color: var(--brand-border);
+  transform: translateY(-1px);
+}
+
+.profile-summary h2 {
+  color: var(--brand-text);
+}
+
+.profile-summary p,
+.profile-summary small {
+  color: var(--brand-text-muted);
+}
+
+.profile-avatar {
+  box-shadow: 0 0 0 2px rgba(99, 216, 232, 0.1), 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+.chat-header {
+  min-height: 68px;
+  border-bottom-color: var(--brand-border);
+}
+
+.channel-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.channel-brand img {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--brand-border);
+}
+
+.channel-brand-copy h1 {
+  color: var(--brand-text);
+  margin: 0;
+}
+
+.channel-brand-copy .connection {
+  margin-top: 2px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.auth-brand img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--brand-border-strong), 0 14px 28px rgba(0, 0, 0, 0.26);
+}
+
+.auth-brand-copy {
+  text-align: left;
+}
+
+.auth-brand-copy h1 {
+  margin: 0;
+  color: var(--brand-text);
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.auth-brand-copy span {
+  display: block;
+  margin-top: 3px;
+  color: var(--brand-text-muted);
+  font-size: 12px;
+}
+
+.login {
+  background:
+    linear-gradient(180deg, rgba(16, 26, 36, 0.985), rgba(9, 16, 23, 0.985));
+}
+
+.login-form button,
+.message-form button {
+  background: linear-gradient(135deg, var(--brand-primary-strong), var(--brand-secondary));
+  box-shadow: 0 8px 24px rgba(99, 216, 232, 0.12);
+}
+
+.login-form button:hover,
+.message-form button:hover {
+  background: linear-gradient(135deg, var(--brand-primary), #9b8eff);
+  box-shadow: 0 10px 28px var(--brand-glow);
+}
+
+.login-form input:focus,
+.message-form input:focus,
+.message-form textarea:focus {
+  border-color: var(--brand-border-strong);
+  box-shadow: 0 0 0 3px var(--brand-primary-soft), 0 0 22px rgba(99, 216, 232, 0.05);
+}
+
+.message-bubble {
+  border-color: var(--brand-border);
+}
+
+.mine .message-bubble {
+  background: linear-gradient(135deg, #38aec1, #6b5ee8);
+  box-shadow: 0 8px 22px rgba(62, 156, 188, 0.12);
+}
+
+.system-message {
+  color: var(--brand-text-subtle);
+}
+
+.online-dot {
+  background: #62dfae;
+  box-shadow: 0 0 0 3px rgba(98, 223, 174, 0.08), 0 0 12px rgba(98, 223, 174, 0.16);
+}
+
+.auth-switch {
+  color: var(--brand-primary);
+}
+
+.auth-switch:hover {
+  color: var(--brand-text);
+}
+
+@media (max-width: 520px) {
+  .auth-brand {
+    justify-content: flex-start;
+  }
+
+  .auth-brand img {
+    width: 46px;
+    height: 46px;
+  }
+}
