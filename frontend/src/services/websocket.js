@@ -7,6 +7,28 @@ const RECONNECT_INTERVAL = 10000;
 const AUTH_CLOSE_CODE = 1008;
 const AUTH_CLOSE_REASON = "authentication required";
 
+let currentUserIdPromise = null;
+
+async function getCurrentUserId() {
+  if (!currentUserIdPromise) {
+    currentUserIdPromise = fetch(
+      `${import.meta.env.VITE_API_URL || "https://nexchat-backend-2cyf.onrender.com/api/auth"}/me`,
+      { credentials: "include" },
+    )
+      .then((response) => response.json().catch(() => null))
+      .then((data) => {
+        const id = Number(data?.user?.id);
+        if (!Number.isFinite(id)) throw new Error("Sessão não identificada");
+        return id;
+      })
+      .catch((error) => {
+        currentUserIdPromise = null;
+        throw error;
+      });
+  }
+  return currentUserIdPromise;
+}
+
 export function createWebSocket(
   _legacyToken,
   { onMessage, onOpen, onClose, onError, onReconnecting, onAuthenticationRequired } = {},
@@ -28,7 +50,25 @@ export function createWebSocket(
       try {
         const data = JSON.parse(event.data);
         if (data?.type === "direct_message") {
-          notifyDirectMessage(data);
+          void getCurrentUserId()
+            .then((currentUserId) => {
+              const senderId = Number(data.senderId ?? data.userId);
+              const recipientId = Number(data.recipientId);
+              if (
+                Number.isFinite(senderId) &&
+                Number.isFinite(recipientId) &&
+                recipientId === currentUserId &&
+                senderId !== currentUserId
+              ) {
+                notifyDirectMessage({
+                  ...data,
+                  senderId,
+                  userId: senderId,
+                  displayName: data.displayName || data.username || "Usuário",
+                });
+              }
+            })
+            .catch(() => {});
         }
         onMessage?.(data);
       } catch (error) {
