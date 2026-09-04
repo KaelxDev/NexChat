@@ -1,6 +1,7 @@
 /* =========================================================
-   NEXCHAT — MOBILE UX
-   Touch-first refinements without changing app architecture.
+   POKINEX — RESPONSIVE LAYOUT
+   Mobile uses the same chat structure and visual hierarchy as desktop.
+   Only dimensions/spacing adapt to the viewport.
 ========================================================= */
 
 @media (max-width: 700px) {
@@ -15,7 +16,6 @@
   }
 
   body { overscroll-behavior: none; }
-  #root { border-inline: 0; }
 
   .app {
     width: 100%;
@@ -30,6 +30,41 @@
     min-height: 100dvh;
     border: 0;
     border-radius: 0;
+  }
+
+  /* Keep the desktop sidebar available on mobile instead of replacing it
+     with a separate mobile navigation. */
+  .sidebar {
+    display: flex !important;
+    width: clamp(170px, 31vw, 250px);
+    flex: 0 0 clamp(170px, 31vw, 250px);
+    padding: 14px;
+  }
+
+  .sidebar-main {
+    min-width: 0;
+  }
+
+  .sidebar-topbar strong,
+  .channel-entry-copy,
+  .user-info,
+  .profile-summary-copy,
+  .history-button span:last-child {
+    min-width: 0;
+  }
+
+  .sidebar-topbar strong,
+  .channel-entry-copy strong,
+  .channel-entry-copy small,
+  .user-info strong,
+  .user-info span,
+  .profile-summary-copy strong,
+  .profile-summary-copy span,
+  .history-button strong,
+  .history-button small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .chat-content {
@@ -71,11 +106,6 @@
   .message { max-width: 94% !important; }
   .message-bubble { max-width: 100% !important; }
   .message .message-row { touch-action: pan-y; }
-
-  .message .message-row::before {
-    inset: -15px -14px !important;
-    border-radius: 20px;
-  }
 
   .message-context-menu {
     min-width: min(230px, calc(100vw - 24px));
@@ -152,7 +182,7 @@
   }
 
   .profile-modal {
-    width: 100%;
+    width: min(100%, 520px);
     max-width: none;
     max-height: min(92dvh, 760px);
     padding: 20px 16px max(20px, env(safe-area-inset-bottom));
@@ -164,10 +194,93 @@
   .profile-actions button, .avatar-button { min-height: 44px; }
 }
 
-@media (max-width: 380px) {
-  .chat-header { padding-inline: 9px; }
-  .messages { padding-inline: 7px; }
+@media (max-width: 520px) {
+  /* The same desktop sidebar remains present, but becomes a compact rail. */
+  .sidebar {
+    width: 180px !important;
+    flex-basis: 180px !important;
+    padding: 12px 10px;
+  }
+
+  .sidebar-rail {
+    display: none;
+  }
+
+  .sidebar-topbar {
+    padding-inline: 4px;
+  }
+
+  .sidebar-heading {
+    margin-top: 16px;
+  }
+
+  .channel-entry {
+    padding: 8px;
+  }
+
+  .channel-entry-copy small,
+  .user-info span,
+  .history-button small {
+    font-size: 10px;
+  }
+
+  .user {
+    padding: 7px 6px;
+    gap: 7px;
+  }
+
+  .profile-summary {
+    padding: 8px 6px;
+  }
+
+  .history-button {
+    padding: 8px 6px;
+  }
+
+  .chat-header {
+    min-height: 56px;
+    padding-inline: 9px;
+  }
+
+  .chat-header h1 {
+    font-size: 15px;
+  }
+
+  .connection {
+    display: none;
+  }
+
+  .messages {
+    padding: 12px 9px;
+  }
+
   .message { max-width: 96% !important; }
+}
+
+@media (max-width: 380px) {
+  .sidebar {
+    width: 155px !important;
+    flex-basis: 155px !important;
+    padding-inline: 7px;
+  }
+
+  .sidebar-heading-count,
+  .workspace-dot,
+  .channel-entry-live,
+  .profile-arrow,
+  .history-button-icon {
+    display: none;
+  }
+
+  .sidebar-topbar strong {
+    font-size: 14px;
+  }
+
+  .sidebar-heading {
+    font-size: 10px;
+  }
+
+  .messages { padding-inline: 7px; }
   .message-bubble { font-size: 15px !important; }
   .message-form { padding-inline: 7px; }
   .message-form button { min-width: 44px; padding-inline: 9px; }
