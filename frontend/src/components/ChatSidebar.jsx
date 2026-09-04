@@ -18,19 +18,28 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
         <button className="profile-summary" type="button" onClick={onOpenProfile}>
           <div className="avatar profile-avatar">
             {avatar ? <img src={avatar} alt="" /> : displayName.slice(0, 1).toUpperCase()}
+            <span className="profile-online-indicator" aria-hidden="true" />
           </div>
-          <div>
-            <h2>{displayName}</h2>
+          <div className="profile-summary-copy">
+            <div className="profile-name-row">
+              <h2>{displayName}</h2>
+              <span className="profile-edit-mark" aria-hidden="true">↗</span>
+            </div>
             <p>@{user.username}</p>
-            <small>{profile?.status || user?.status || "Sem status"}</small>
+            <small>{profile?.status || user?.status || "Disponível para conversar"}</small>
           </div>
         </button>
       </div>
 
-      <div className="users-title">Usuários online — {users.length}</div>
+      <div className="sidebar-section-heading">
+        <span>Conectados agora</span>
+        <span className="users-count-badge">{users.length}</span>
+      </div>
+
       <ul className="users">
         {users.map((onlineUser) => {
           const onlineAvatar = normalizeAvatarUrl(onlineUser.avatar, onlineUser.id);
+          const name = onlineUser.displayName || onlineUser.username;
 
           return (
             <li className="user" key={onlineUser.id}>
@@ -40,21 +49,30 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
                 ) : (
                   userInitial(onlineUser)
                 )}
+                <span className="user-online-indicator" aria-hidden="true" />
               </div>
               <div className="user-info">
-                <strong>{onlineUser.displayName || onlineUser.username}</strong>
-                <span>
-                  <span className="online-dot" />@{onlineUser.username}
-                </span>
+                <strong>{name}</strong>
+                <span>@{onlineUser.username}</span>
               </div>
             </li>
           );
         })}
       </ul>
 
-      <button className="logout" type="button" onClick={onClearHistory}>
-        Limpar histórico local
-      </button>
+      <div className="sidebar-footer">
+        <button className="history-button" type="button" onClick={onClearHistory}>
+          <span className="history-button-icon" aria-hidden="true">⌫</span>
+          <span>
+            <strong>Limpar histórico</strong>
+            <small>Somente neste dispositivo</small>
+          </span>
+        </button>
+        <div className="sidebar-signature">
+          <img src="/icone.png?v=2" alt="" />
+          <span>Pokinex</span>
+        </div>
+      </div>
     </aside>
   );
 }
