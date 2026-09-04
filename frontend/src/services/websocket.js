@@ -1,3 +1,5 @@
+import { notifyDirectMessage } from "../notifications";
+
 const DEFAULT_WS_URL = "wss://nexchat-backend-2cyf.onrender.com/ws";
 const LOCAL_WS_URL = `ws://${window.location.hostname}:8000/ws`;
 const WS_URL = import.meta.env.VITE_WS_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? LOCAL_WS_URL : DEFAULT_WS_URL);
@@ -24,7 +26,11 @@ export function createWebSocket(
     };
     socket.onmessage = (event) => {
       try {
-        onMessage?.(JSON.parse(event.data));
+        const data = JSON.parse(event.data);
+        if (data?.type === "direct_message") {
+          notifyDirectMessage(data);
+        }
+        onMessage?.(data);
       } catch (error) {
         console.error("Erro ao interpretar mensagem:", error);
       }
