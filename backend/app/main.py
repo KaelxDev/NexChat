@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from app.auth import get_user_from_token
 from app.database import close_db_pool, init_db_pool, initialize_database
-from app.mod​​eration_bot import BOT_USER, moderation_bot
+from app.moderation_bot import BOT_USER, moderation_bot
 from app.routes.auth import router as auth_router
 from app.routes.messages import router as messages_router
 from app.security import ALLOWED_ORIGINS, is_allowed_origin
@@ -97,16 +97,15 @@ async def _send_validation_error(websocket: WebSocket, action: str, error: Valid
 
 
 async def _send_users_with_bot():
-    users = []
-    seen = {BOT_USER["id"]}
-    users.append({
+    users = [{
         "id": BOT_USER["id"],
         "username": BOT_USER["username"],
         "displayName": BOT_USER["displayName"],
         "avatar": BOT_USER["avatar"],
         "status": BOT_USER["status"],
         "online": True,
-    })
+    }]
+    seen = {BOT_USER["id"]}
 
     for user in manager.active_connections.values():
         if user["id"] in seen:
