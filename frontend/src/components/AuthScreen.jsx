@@ -36,9 +36,9 @@ export default function AuthScreen({ onAuthenticated }) {
             <span>Pokinex</span>
           </div>
           <div className="auth-visual-copy">
-            <span className="auth-kicker">CHAT • COMMUNITY • REALTIME</span>
-            <h1>Converse sem ruído.</h1>
-            <p>Um espaço simples para mensagens rápidas, presença online e conversas em tempo real.</p>
+            <span className="auth-kicker">CHAT • COMMUNITY • DIVERSÃO</span>
+            <h1>Converse em tempo real.</h1>
+            <p>Um espaço simples para conversar, compartilhar ideias e se conectar com outras pessoas.</p>
           </div>
           <div className="auth-visual-foot">
             <span className="auth-visual-line" />
