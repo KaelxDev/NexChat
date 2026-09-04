@@ -7,22 +7,22 @@ const CATEGORIES = [
     label: "Pessoas",
     icon: "☻",
     emojis: [
-      ["😀", "grinning"], ["😃", "smile"], ["😄", "smiling"], ["😁", "beaming"], ["😆", "laughing"], ["😅", "sweat smile"], ["😂", "joy laughing"], ["🤣", "rofl"],
-      ["🥲", "smiling tear"], ["😊", "blush"], ["😇", "innocent"], ["🙂", "slightly smile"], ["🙃", "upside down"], ["😉", "wink"], ["😌", "relieved"], ["😍", "heart eyes"],
-      ["🥰", "love hearts"], ["😘", "kiss"], ["😗", "kissing"], ["😚", "kissing closed eyes"], ["😙", "kissing smiling"], ["🥹", "tears"], ["😋", "yum"], ["😛", "tongue"],
-      ["😝", "stuck out tongue"], ["😜", "wink tongue"], ["🤪", "zany"], ["🤨", "raised eyebrow"], ["🧐", "monocle"], ["🤓", "nerd"], ["😎", "sunglasses"], ["🤩", "star eyes"],
-      ["🥳", "party"], ["😏", "smirk"], ["😒", "unamused"], ["😞", "disappointed"], ["😔", "pensive"], ["😟", "worried"], ["😕", "confused"], ["🙁", "slightly frown"],
+      ["😀", "grinning smile feliz"], ["😃", "smile alegre"], ["😄", "smiling feliz"], ["😁", "beaming"], ["😆", "laughing rindo"], ["😅", "sweat smile"], ["😂", "joy laughing"], ["🤣", "rofl"],
+      ["🥲", "smiling tear"], ["😊", "blush fofo"], ["😇", "innocent"], ["🙂", "slightly smile"], ["🙃", "upside down"], ["😉", "wink piscando"], ["😌", "relieved"], ["😍", "heart eyes amor"],
+      ["🥰", "love hearts"], ["😘", "kiss beijo"], ["😗", "kissing"], ["😚", "kissing closed eyes"], ["😙", "kissing smiling"], ["🥹", "tears chorando"], ["😋", "yum gostoso"], ["😛", "tongue lingua"],
+      ["😝", "stuck out tongue"], ["😜", "wink tongue"], ["🤪", "zany louco"], ["🤨", "raised eyebrow"], ["🧐", "monocle"], ["🤓", "nerd"], ["😎", "sunglasses cool"], ["🤩", "star eyes"],
+      ["🥳", "party festa"], ["😏", "smirk"], ["😒", "unamused"], ["😞", "disappointed"], ["😔", "pensive"], ["😟", "worried"], ["😕", "confused"], ["🙁", "slightly frown"],
       ["☹️", "frown"], ["😣", "persevere"], ["😖", "confounded"], ["😫", "tired"], ["😩", "weary"], ["🥺", "pleading"], ["😢", "cry"], ["😭", "sob"],
-      ["😤", "triumph"], ["😠", "angry"], ["😡", "rage"], ["🤬", "cursing"], ["🤯", "exploding head"], ["😳", "flushed"], ["🥵", "hot"], ["🥶", "cold"],
-      ["😱", "scream"], ["😨", "fearful"], ["😰", "anxious"], ["😥", "sad relief"], ["😓", "sweat"], ["🤗", "hug"], ["🤔", "thinking"], ["🫡", "salute"],
-      ["🤭", "hand over mouth"], ["🫢", "shy"], ["🫣", "peek"], ["🤫", "shushing"], ["🤥", "lying"], ["😶", "no mouth"], ["🫠", "melting"], ["😐", "neutral"],
+      ["😤", "triumph"], ["😠", "angry bravo"], ["😡", "rage raiva"], ["🤬", "cursing"], ["🤯", "exploding head"], ["😳", "flushed"], ["🥵", "hot"], ["🥶", "cold"],
+      ["😱", "scream medo"], ["😨", "fearful"], ["😰", "anxious"], ["😥", "sad relief"], ["😓", "sweat"], ["🤗", "hug abraço"], ["🤔", "thinking pensando"], ["🫡", "salute saudacao"],
+      ["🤭", "hand over mouth"], ["🫢", "shy"], ["🫣", "peek"], ["🤫", "shushing"], ["🤥", "lying mentira"], ["😶", "no mouth"], ["🫠", "melting"], ["😐", "neutral"],
       ["😑", "expressionless"], ["😬", "grimace"], ["🙄", "rolling eyes"], ["😯", "hushed"], ["😦", "frowning open mouth"], ["😧", "anguish"], ["😮", "open mouth"], ["😲", "astonished"],
-      ["🥱", "yawn"], ["😴", "sleeping"], ["🤤", "drooling"], ["😪", "sleepy"], ["😵", "dizzy"], ["🤐", "zipper mouth"], ["🤢", "nauseated"], ["🤮", "vomit"],
+      ["🥱", "yawn bocejo"], ["😴", "sleeping sono"], ["🤤", "drooling"], ["😪", "sleepy"], ["😵", "dizzy"], ["🤐", "zipper mouth"], ["🤢", "nauseated"], ["🤮", "vomit"],
       ["🤧", "sneezing"], ["😷", "mask"], ["🤒", "sick"], ["🤕", "injured"], ["🤠", "cowboy"], ["😈", "smiling devil"], ["👿", "angry devil"], ["👹", "ogre"],
       ["👺", "goblin"], ["🤡", "clown"], ["💩", "poop"], ["👻", "ghost"], ["💀", "skull"], ["☠️", "skull crossbones"], ["👽", "alien"], ["🤖", "robot"],
       ["😺", "grinning cat"], ["😸", "grinning cat smile"], ["😹", "cat joy"], ["😻", "cat heart eyes"], ["😼", "cat smirk"], ["😽", "cat kiss"], ["🙀", "cat scream"], ["😿", "cat cry"],
-      ["😾", "cat angry"], ["🫨", "shaking face"], ["🫤", "dotted line face"], ["🫥", "dotted face"], ["🫡", "saluting face"], ["🫶", "heart hands"], ["🤑", "money mouth"], ["🤠", "cowboy hat"],
-      ["🤦", "facepalm"], ["🤷", "shrug"], ["🙅", "no gesture"], ["🙆", "ok gesture"], ["💁", "information desk"], ["🙋", "raising hand"], ["🙇", "bow"], ["🤦‍♂️", "man facepalm"],
+      ["😾", "cat angry"], ["🫨", "shaking face"], ["🫤", "dotted face"], ["🫥", "dotted face"], ["🤑", "money mouth"], ["🤦", "facepalm"], ["🤷", "shrug"], ["🙅", "no gesture"],
+      ["🙆", "ok gesture"], ["💁", "information desk"], ["🙋", "raising hand"], ["🙇", "bow"], ["🤦‍♂️", "man facepalm"], ["🫶", "heart hands"],
     ],
   },
   {
@@ -30,13 +30,13 @@ const CATEGORIES = [
     label: "Gestos",
     icon: "✋",
     emojis: [
-      ["👍", "thumbs up"], ["👎", "thumbs down"], ["👌", "ok"], ["✌️", "peace"], ["🤞", "fingers crossed"], ["🤟", "love"], ["🤘", "rock"], ["🤙", "call"],
-      ["👋", "wave"], ["👏", "clap"], ["🙌", "raised hands"], ["👐", "open hands"], ["🤝", "handshake"], ["🙏", "pray"], ["💪", "muscle"], ["🫶", "heart hands"],
+      ["👍", "thumbs up gostei"], ["👎", "thumbs down"], ["👌", "ok"], ["✌️", "peace paz"], ["🤞", "fingers crossed"], ["🤟", "love"], ["🤘", "rock"], ["🤙", "call"],
+      ["👋", "wave ola tchau"], ["👏", "clap aplauso"], ["🙌", "raised hands"], ["👐", "open hands"], ["🤝", "handshake"], ["🙏", "pray"], ["💪", "muscle força"], ["🫶", "heart hands"],
       ["☝️", "point up"], ["👇", "point down"], ["👆", "point up"], ["👉", "point right"], ["👈", "point left"], ["✍️", "writing"], ["💅", "nail polish"], ["🤳", "selfie"],
       ["🤏", "pinch"], ["🤌", "pinched fingers"], ["🖖", "vulcan"], ["👊", "fist punch"], ["✊", "raised fist"], ["🤛", "left fist"], ["🤜", "right fist"], ["🤚", "raised back hand"],
-      ["🖐️", "five fingers"], ["🖖", "vulcan salute"], ["👋", "hello goodbye"], ["🫰", "finger heart"], ["🫵", "point at viewer"], ["🫳", "palm down"], ["🫴", "palm up"], ["🫱", "right hand"],
-      ["🫲", "left hand"], ["🫸", "rightwards hand"], ["🫷", "leftwards hand"], ["🤲", "palms up"], ["🤜", "right punch"], ["🤛", "left punch"], ["👏", "applause"], ["🙌", "celebrate"],
-      ["👐", "hug open hands"], ["💪", "strong"], ["🦾", "mechanical arm"], ["🦿", "mechanical leg"], ["👀", "eyes"], ["👁️", "eye"], ["👄", "mouth"], ["👅", "tongue"],
+      ["🖐️", "five fingers"], ["🫰", "finger heart"], ["🫵", "point at viewer"], ["🫳", "palm down"], ["🫴", "palm up"], ["🫱", "right hand"], ["🫲", "left hand"], ["🫸", "rightwards hand"],
+      ["🫷", "leftwards hand"], ["🤲", "palms up"], ["🦾", "mechanical arm"], ["🦿", "mechanical leg"], ["👀", "eyes"], ["👁️", "eye"], ["👄", "mouth"], ["👅", "tongue"],
+      ["👂", "ear"], ["👃", "nose"], ["🧠", "brain"], ["🫀", "anatomical heart"], ["🫁", "lungs"], ["🦷", "tooth"], ["👋🏻", "wave light skin"], ["👍🏻", "thumbs up light skin"],
     ],
   },
   {
@@ -55,8 +55,24 @@ const CATEGORIES = [
       ["🦚", "peacock"], ["🦩", "flamingo"], ["🐊", "crocodile"], ["🐅", "tiger"], ["🐆", "leopard"], ["🦍", "gorilla"], ["🦧", "orangutan"], ["🐒", "monkey"],
       ["🦇", "bat"], ["🐺", "wolf"], ["🦝", "raccoon"], ["🦨", "skunk"], ["🦡", "badger"], ["🦦", "otter"], ["🦥", "sloth"], ["🦫", "beaver"],
       ["🦂", "scorpion"], ["🕷️", "spider"], ["🕸️", "spider web"], ["🐜", "ant"], ["🐛", "bug"], ["🪲", "beetle"], ["🪳", "cockroach"], ["🦗", "cricket"],
-      ["🐋", "whale"], ["🐬", "dolphin"], ["🦭", "seal"], ["🦦", "otter"], ["🐊", "alligator"], ["🐉", "dragon"], ["🐲", "dragon face"], ["🦕", "sauropod dinosaur"],
-      ["🦖", "t rex dinosaur"], ["🦎", "reptile"], ["🪼", "jellyfish"], ["🦪", "oyster"], ["🪸", "coral"], ["🦐", "shrimp"], ["🦭", "seal"], ["🐚", "shell"],
+      ["🐬", "dolphin"], ["🦭", "seal"], ["🐉", "dragon"], ["🐲", "dragon face"], ["🦕", "dinosaur"], ["🦖", "t rex dinosaur"], ["🪼", "jellyfish"], ["🦪", "oyster"],
+      ["🪸", "coral"], ["🦐", "shrimp"], ["🐚", "shell"], ["🦤", "dodo"], ["🦣", "mammoth"], ["🦧", "orangutan"], ["🦫", "beaver"], ["🦨", "skunk"],
+    ],
+  },
+  {
+    id: "nature",
+    label: "Natureza",
+    icon: "🌿",
+    emojis: [
+      ["🌱", "seedling planta"], ["🌿", "herb"], ["☘️", "shamrock trevo"], ["🍀", "four leaf clover sorte"], ["🎋", "bamboo"], ["🌵", "cactus"], ["🌴", "palm tree"], ["🌳", "tree"],
+      ["🌲", "evergreen tree"], ["🌳", "deciduous tree"], ["🌴", "palm"], ["🌱", "sprout"], ["🌷", "tulip"], ["🌹", "rose"], ["🌺", "hibiscus"], ["🌸", "cherry blossom"],
+      ["🌼", "blossom"], ["🌻", "sunflower"], ["💐", "bouquet"], ["🍁", "maple leaf"], ["🍂", "fallen leaf"], ["🍃", "leaves wind"], ["🌾", "rice plant"], ["🪴", "potted plant"],
+      ["☀️", "sun"], ["🌤️", "sun behind cloud"], ["⛅", "partly cloudy"], ["🌥️", "mostly cloudy"], ["☁️", "cloud"], ["🌦️", "sun rain"], ["🌧️", "rain"], ["⛈️", "thunderstorm"],
+      ["🌩️", "lightning cloud"], ["🌨️", "snow cloud"], ["❄️", "snowflake"], ["☃️", "snowman"], ["🌪️", "tornado"], ["🌫️", "fog"], ["🌈", "rainbow"], ["💧", "droplet agua"],
+      ["🌊", "wave mar"], ["🔥", "fire fogo"], ["💨", "wind"], ["🌍", "earth"], ["🌎", "earth americas"], ["🌏", "earth asia"], ["🌙", "crescent moon"], ["🌕", "full moon"],
+      ["🌑", "new moon"], ["🌒", "waxing crescent"], ["🌓", "first quarter moon"], ["🌔", "waxing gibbous"], ["🌗", "last quarter moon"], ["🌘", "waning crescent"], ["⭐", "star"], ["🌟", "glowing star"],
+      ["✨", "sparkles"], ["💫", "dizzy star"], ["☄️", "comet"], ["🌌", "milky way space"], ["🌠", "shooting star"], ["🪐", "saturn planet"], ["🌋", "volcano"], ["🏔️", "mountain snow"],
+      ["⛰️", "mountain"], ["🏕️", "camping"], ["🏜️", "desert"], ["🏝️", "island"], ["🏞️", "national park"], ["🌅", "sunrise"], ["🌄", "mountain sunrise"], ["🌇", "sunset city"],
     ],
   },
   {
@@ -66,16 +82,14 @@ const CATEGORIES = [
     emojis: [
       ["🍎", "apple"], ["🍐", "pear"], ["🍊", "orange"], ["🍋", "lemon"], ["🍌", "banana"], ["🍉", "watermelon"], ["🍇", "grapes"], ["🍓", "strawberry"],
       ["🫐", "blueberry"], ["🍒", "cherries"], ["🍑", "peach"], ["🍍", "pineapple"], ["🥝", "kiwi"], ["🍅", "tomato"], ["🥑", "avocado"], ["🌽", "corn"],
-      ["🍕", "pizza"], ["🍔", "burger"], ["🍟", "fries"], ["🌭", "hot dog"], ["🌮", "taco"], ["🌯", "burrito"], ["🍿", "popcorn"], ["🍣", "sushi"],
-      ["🍜", "ramen"], ["🍝", "spaghetti"], ["🍩", "donut"], ["🍪", "cookie"], ["🎂", "cake"], ["🍰", "shortcake"], ["🍫", "chocolate"], ["🍭", "lollipop"],
-      ["☕", "coffee"], ["🧋", "bubble tea"], ["🥤", "drink"], ["🍵", "tea"], ["🧃", "juice"], ["🍺", "beer"], ["🍹", "cocktail"], ["🍷", "wine"],
+      ["🥥", "coconut"], ["🥭", "mango"], ["🍈", "melon"], ["🍏", "green apple"], ["🥕", "carrot"], ["🥔", "potato"], ["🍆", "eggplant"], ["🥒", "cucumber"],
+      ["🥬", "leafy greens"], ["🥦", "broccoli"], ["🧄", "garlic"], ["🧅", "onion"], ["🍄", "mushroom"], ["🌶️", "hot pepper"], ["🫑", "bell pepper"], ["🫒", "olive"],
+      ["🍕", "pizza"], ["🍔", "burger"], ["🍟", "fries"], ["🌭", "hot dog"], ["🌮", "taco"], ["🌯", "burrito"], ["🥪", "sandwich"], ["🥗", "salad"],
+      ["🍿", "popcorn"], ["🍣", "sushi"], ["🍜", "ramen"], ["🍝", "spaghetti"], ["🍚", "rice"], ["🍙", "rice ball"], ["🥟", "dumpling"], ["🍱", "bento"],
       ["🥐", "croissant"], ["🥖", "baguette"], ["🥨", "pretzel"], ["🧀", "cheese"], ["🥚", "egg"], ["🍳", "fried egg"], ["🥓", "bacon"], ["🥩", "steak"],
-      ["🍗", "chicken leg"], ["🍖", "meat bone"], ["🌮", "taco"], ["🥪", "sandwich"], ["🥗", "salad"], ["🥣", "bowl"], ["🍲", "stew"], ["🍛", "curry rice"],
-      ["🍚", "rice"], ["🍙", "rice ball"], ["🍘", "rice cracker"], ["🍥", "fish cake"], ["🥟", "dumpling"], ["🥠", "fortune cookie"], ["🥮", "moon cake"], ["🍱", "bento"],
-      ["🍦", "ice cream"], ["🍨", "ice cream bowl"], ["🍧", "shaved ice"], ["🍮", "custard"], ["🍯", "honey"], ["🧁", "cupcake"], ["🥧", "pie"], ["🍬", "candy"],
-      ["🍙", "onigiri"], ["🥛", "milk"], ["🍼", "baby bottle"], ["🍶", "sake"], ["🍻", "beer cheers"], ["🥂", "clinking glasses"], ["🥃", "tumbler"], ["🍸", "cocktail glass"],
-      ["🥥", "coconut"], ["🥭", "mango"], ["🍈", "melon"], ["🍏", "green apple"], ["🍋", "citrus"], ["🥕", "carrot"], ["🥔", "potato"], ["🍆", "eggplant"],
-      ["🥒", "cucumber"], ["🥬", "leafy greens"], ["🥦", "broccoli"], ["🧄", "garlic"], ["🧅", "onion"], ["🍄", "mushroom"], ["🌶️", "hot pepper"], ["🫑", "bell pepper"],
+      ["🍗", "chicken leg"], ["🍖", "meat bone"], ["🍦", "ice cream"], ["🍨", "ice cream bowl"], ["🍧", "shaved ice"], ["🍮", "custard"], ["🧁", "cupcake"], ["🥧", "pie"],
+      ["🍩", "donut"], ["🍪", "cookie"], ["🎂", "cake"], ["🍰", "shortcake"], ["🍫", "chocolate"], ["🍬", "candy"], ["🍭", "lollipop"], ["🍯", "honey"],
+      ["☕", "coffee"], ["🧋", "bubble tea"], ["🥤", "drink"], ["🍵", "tea"], ["🧃", "juice"], ["🥛", "milk"], ["🍼", "baby bottle"], ["🥂", "clinking glasses"],
     ],
   },
   {
@@ -83,15 +97,30 @@ const CATEGORIES = [
     label: "Atividades",
     icon: "⚽",
     emojis: [
-      ["⚽", "soccer"], ["🏀", "basketball"], ["🏈", "football"], ["⚾", "baseball"], ["🎾", "tennis"], ["🏐", "volleyball"], ["🎮", "game videogame"], ["🕹️", "joystick"],
-      ["🎯", "target"], ["🎲", "dice"], ["♟️", "chess"], ["🎸", "guitar"], ["🎹", "piano"], ["🎤", "microphone"], ["🎧", "headphones"], ["🎬", "movie"],
-      ["🏆", "trophy"], ["🥇", "gold medal"], ["🎉", "party"], ["🎊", "confetti"], ["🎁", "gift"], ["🎈", "balloon"], ["🚀", "rocket"], ["🛸", "ufo"],
-      ["🏸", "badminton"], ["🏓", "ping pong"], ["🏒", "ice hockey"], ["🏑", "field hockey"], ["🥍", "lacrosse"], ["🏏", "cricket sport"], ["⛳", "golf"], ["🏹", "archery"],
-      ["🥊", "boxing"], ["🥋", "martial arts"], ["🛹", "skateboard"], ["🛼", "roller skate"], ["⛸️", "ice skate"], ["🎿", "ski"], ["🏂", "snowboard"], ["🏄", "surfing"],
-      ["🏊", "swimming"], ["🚴", "cycling"], ["🏋️", "weightlifting"], ["🤸", "gymnastics"], ["🤾", "handball"], ["🤽", "water polo"], ["🧘", "meditation"], ["🧗", "climbing"],
-      ["🎨", "art painting"], ["🎭", "theater"], ["🎪", "circus"], ["🎟️", "ticket"], ["🎫", "admission"], ["🎼", "music score"], ["🎷", "saxophone"], ["🎺", "trumpet"],
-      ["🎻", "violin"], ["🥁", "drum"], ["🪕", "banjo"], ["🎮", "controller"], ["🧩", "puzzle"], ["🃏", "joker card"], ["🎰", "slot"], ["🎳", "bowling"],
-      ["🏅", "medal"], ["🥈", "silver medal"], ["🥉", "bronze medal"], ["🏆", "champion"], ["🏟️", "stadium"], ["🎆", "fireworks"], ["🎇", "sparkler"], ["🪅", "pinata"],
+      ["⚽", "soccer futebol"], ["🏀", "basketball basquete"], ["🏈", "football"], ["⚾", "baseball"], ["🥎", "softball"], ["🎾", "tennis"], ["🏐", "volleyball"], ["🏉", "rugby"],
+      ["🥏", "frisbee"], ["🎱", "pool billiards"], ["🪀", "yo yo"], ["🏓", "ping pong"], ["🏸", "badminton"], ["🏒", "ice hockey"], ["🏑", "field hockey"], ["🥍", "lacrosse"],
+      ["🏏", "cricket sport"], ["⛳", "golf"], ["🏹", "archery"], ["🥊", "boxing"], ["🥋", "martial arts"], ["🛹", "skateboard"], ["🛼", "roller skate"], ["⛸️", "ice skate"],
+      ["🎿", "ski"], ["🏂", "snowboard"], ["🏄", "surfing"], ["🏊", "swimming"], ["🚴", "cycling"], ["🏋️", "weightlifting"], ["🤸", "gymnastics"], ["🧗", "climbing"],
+      ["🎮", "game videogame"], ["🕹️", "joystick"], ["🎯", "target"], ["🎲", "dice"], ["♟️", "chess"], ["🧩", "puzzle"], ["🃏", "joker card"], ["🎳", "bowling"],
+      ["🎸", "guitar"], ["🎹", "piano"], ["🎤", "microphone"], ["🎧", "headphones"], ["🎷", "saxophone"], ["🎺", "trumpet"], ["🎻", "violin"], ["🥁", "drum"],
+      ["🎨", "art painting"], ["🎭", "theater"], ["🎪", "circus"], ["🎬", "movie"], ["🎟️", "ticket"], ["🎼", "music score"], ["🎶", "music notes"], ["🎵", "music note"],
+      ["🏆", "trophy"], ["🥇", "gold medal"], ["🥈", "silver medal"], ["🥉", "bronze medal"], ["🏅", "medal"], ["🎉", "party festa"], ["🎊", "confetti"], ["🎁", "gift"],
+      ["🎈", "balloon"], ["🎆", "fireworks"], ["🎇", "sparkler"], ["🪅", "pinata"], ["🚀", "rocket"], ["🛸", "ufo"], ["🪂", "parachute"], ["🎢", "roller coaster"],
+    ],
+  },
+  {
+    id: "travel",
+    label: "Viagem",
+    icon: "✈️",
+    emojis: [
+      ["🚗", "car carro"], ["🚕", "taxi"], ["🚙", "suv"], ["🚌", "bus onibus"], ["🚎", "trolleybus"], ["🏎️", "race car"], ["🚓", "police car"], ["🚑", "ambulance"],
+      ["🚒", "fire engine"], ["🚐", "minibus"], ["🛻", "pickup truck"], ["🚚", "truck"], ["🚛", "articulated truck"], ["🚜", "tractor"], ["🛵", "scooter"], ["🏍️", "motorcycle"],
+      ["🚲", "bicycle bike"], ["🛴", "kick scooter"], ["✈️", "airplane"], ["🛫", "airplane departure"], ["🛬", "airplane arrival"], ["🛩️", "small airplane"], ["🚁", "helicopter"], ["🚀", "rocket"],
+      ["🚂", "locomotive train"], ["🚆", "train"], ["🚇", "metro"], ["🚊", "tram"], ["🚝", "monorail"], ["🚄", "high speed train"], ["🚅", "bullet train"], ["🚉", "station"],
+      ["🚢", "ship navio"], ["⛴️", "ferry"], ["🛥️", "motor boat"], ["⛵", "sailboat"], ["🚤", "speedboat"], ["🛟", "life ring"], ["⚓", "anchor"], ["🗺️", "world map"],
+      ["🧭", "compass"], ["🏖️", "beach"], ["🏝️", "island"], ["🏜️", "desert"], ["🏔️", "mountain"], ["🗻", "mount fuji"], ["🏕️", "camping"], ["🏨", "hotel"],
+      ["🏠", "house"], ["🏰", "castle"], ["🗼", "tokyo tower"], ["🗽", "statue liberty"], ["🗿", "moai"], ["⛩️", "shrine"], ["🕌", "mosque"], ["⛪", "church"],
+      ["🎡", "ferris wheel"], ["🎢", "roller coaster"], ["🎠", "carousel"], ["🌉", "bridge night"], ["🌁", "bridge fog"], ["🌃", "night city"], ["🌆", "city sunset"], ["🌇", "sunset city"],
     ],
   },
   {
@@ -99,16 +128,16 @@ const CATEGORIES = [
     label: "Objetos",
     icon: "💡",
     emojis: [
-      ["💡", "idea light"], ["📱", "phone"], ["💻", "computer"], ["⌨️", "keyboard"], ["🖱️", "mouse"], ["📷", "camera"], ["📺", "tv"], ["🎧", "headphones"],
-      ["📚", "books"], ["📖", "book"], ["📝", "memo"], ["✏️", "pencil"], ["🔒", "lock"], ["🔑", "key"], ["💎", "gem"], ["🔔", "bell"],
-      ["⚙️", "gear"], ["🔧", "tool"], ["🧪", "test tube"], ["🔬", "microscope"], ["💰", "money"], ["💳", "card"], ["📦", "package"], ["✉️", "email"],
-      ["🖥️", "desktop"], ["🖨️", "printer"], ["💾", "floppy disk"], ["💿", "cd"], ["📀", "dvd"], ["📡", "antenna"], ["🔋", "battery"], ["🔌", "plug"],
-      ["📟", "pager"], ["📞", "telephone"], ["☎️", "phone"], ["📠", "fax"], ["📻", "radio"], ["🎥", "video camera"], ["📹", "camcorder"], ["🎙️", "studio microphone"],
-      ["🗂️", "folders"], ["📂", "open folder"], ["📁", "folder"], ["🗃️", "card file box"], ["🗄️", "file cabinet"], ["📎", "paperclip"], ["🖇️", "linked paperclips"], ["📌", "pushpin"],
-      ["📍", "location pin"], ["📐", "triangle ruler"], ["📏", "ruler"], ["✂️", "scissors"], ["🗑️", "trash"], ["🔍", "magnifying glass"], ["🔎", "search"], ["🔐", "locked key"],
-      ["🧰", "toolbox"], ["🪛", "screwdriver"], ["🔨", "hammer"], ["🪚", "saw"], ["🔩", "nut bolt"], ["🪜", "ladder"], ["🧲", "magnet"], ["🧯", "fire extinguisher"],
-      ["🚪", "door"], ["🛋️", "couch"], ["🪑", "chair"], ["🛏️", "bed"], ["🚿", "shower"], ["🛁", "bathtub"], ["🪞", "mirror"], ["🧴", "lotion bottle"],
+      ["💡", "idea light"], ["📱", "phone celular"], ["💻", "computer computador"], ["⌨️", "keyboard"], ["🖱️", "mouse"], ["🖥️", "desktop"], ["🖨️", "printer"], ["📷", "camera"],
+      ["📺", "tv"], ["📻", "radio"], ["🎥", "video camera"], ["📹", "camcorder"], ["🎙️", "microphone"], ["📡", "antenna"], ["🔋", "battery"], ["🔌", "plug"],
+      ["💾", "floppy disk"], ["💿", "cd"], ["📀", "dvd"], ["📟", "pager"], ["📞", "telephone"], ["☎️", "phone"], ["📠", "fax"], ["🧮", "abacus"],
+      ["📚", "books"], ["📖", "book"], ["📝", "memo"], ["✏️", "pencil"], ["🖊️", "pen"], ["🖋️", "fountain pen"], ["📎", "paperclip"], ["📌", "pushpin"],
+      ["📍", "location pin"], ["📁", "folder"], ["📂", "open folder"], ["🗂️", "folders"], ["🗃️", "card file"], ["🗄️", "file cabinet"], ["🗑️", "trash"], ["📦", "package"],
+      ["🔒", "lock cadeado"], ["🔓", "unlock"], ["🔑", "key chave"], ["🗝️", "old key"], ["🔐", "locked key"], ["🔍", "magnifying glass"], ["🔎", "search"], ["🔔", "bell"],
+      ["⚙️", "gear settings"], ["🔧", "wrench"], ["🧰", "toolbox"], ["🪛", "screwdriver"], ["🔨", "hammer"], ["🪚", "saw"], ["🔩", "nut bolt"], ["🧲", "magnet"],
+      ["🔬", "microscope"], ["🔭", "telescope"], ["🧪", "test tube"], ["🧬", "dna"], ["⚗️", "alembic"], ["💎", "gem"], ["💰", "money"], ["💳", "card"],
       ["🎒", "backpack"], ["👜", "handbag"], ["💼", "briefcase"], ["👓", "glasses"], ["🕶️", "sunglasses"], ["🎩", "top hat"], ["👑", "crown"], ["💍", "ring"],
+      ["🛋️", "couch"], ["🪑", "chair"], ["🛏️", "bed"], ["🚪", "door"], ["🚿", "shower"], ["🛁", "bathtub"], ["🪞", "mirror"], ["🧴", "bottle"],
     ],
   },
   {
@@ -117,17 +146,16 @@ const CATEGORIES = [
     icon: "❤️",
     emojis: [
       ["❤️", "red heart"], ["🧡", "orange heart"], ["💛", "yellow heart"], ["💚", "green heart"], ["💙", "blue heart"], ["💜", "purple heart"], ["🖤", "black heart"], ["🤍", "white heart"],
-      ["💔", "broken heart"], ["❣️", "heart exclamation"], ["💕", "two hearts"], ["💞", "revolving hearts"], ["💓", "beating heart"], ["💗", "growing heart"], ["💖", "sparkling heart"], ["💘", "heart arrow"],
-      ["🔥", "fire"], ["✨", "sparkles"], ["⭐", "star"], ["🌟", "glowing star"], ["💫", "dizzy"], ["💥", "boom"], ["💯", "hundred"], ["❗", "exclamation"],
-      ["❓", "question"], ["‼️", "double exclamation"], ["⁉️", "question exclamation"], ["✅", "check"], ["❌", "cross"], ["⚠️", "warning"], ["🚫", "prohibited"], ["💤", "sleep"],
-      ["💟", "heart decoration"], ["💝", "heart ribbon"], ["💗", "pink heart"], ["🩷", "pink heart"], ["🩵", "light blue heart"], ["🩶", "grey heart"], ["🤎", "brown heart"], ["❤️‍🔥", "heart fire"],
-      ["❤️‍🩹", "healing heart"], ["💌", "love letter"], ["💋", "kiss mark"], ["💐", "bouquet"], ["🌹", "rose"], ["🌸", "cherry blossom"], ["🌺", "hibiscus"], ["🌻", "sunflower"],
-      ["☀️", "sun"], ["🌙", "moon"], ["🌈", "rainbow"], ["☁️", "cloud"], ["🌧️", "rain"], ["⛈️", "storm"], ["❄️", "snowflake"], ["⚡", "lightning"],
-      ["☄️", "comet"], ["🌌", "milky way"], ["🌍", "earth"], ["🌎", "earth americas"], ["🌏", "earth asia"], ["🌑", "new moon"], ["🌕", "full moon"], ["🌞", "sun face"],
-      ["✔️", "check mark"], ["☑️", "check box"], ["➕", "plus"], ["➖", "minus"], ["✖️", "multiply"], ["➗", "divide"], ["♾️", "infinity"], ["💲", "dollar"],
-      ["🔴", "red circle"], ["🟠", "orange circle"], ["🟡", "yellow circle"], ["🟢", "green circle"], ["🔵", "blue circle"], ["🟣", "purple circle"], ["⚫", "black circle"], ["⚪", "white circle"],
-      ["🔺", "red triangle"], ["🔻", "down triangle"], ["🔶", "orange diamond"], ["🔷", "blue diamond"], ["🔸", "small orange diamond"], ["🔹", "small blue diamond"], ["▪️", "black square"], ["▫️", "white square"],
-      ["©️", "copyright"], ["®️", "registered"], ["™️", "trademark"], ["#️⃣", "hash"], ["*️⃣", "asterisk"], ["0️⃣", "zero"], ["1️⃣", "one"], ["2️⃣", "two"],
+      ["🤎", "brown heart"], ["🩷", "pink heart"], ["🩵", "light blue heart"], ["🩶", "grey heart"], ["💔", "broken heart"], ["❤️‍🔥", "heart fire"], ["❤️‍🩹", "healing heart"], ["💕", "two hearts"],
+      ["💞", "revolving hearts"], ["💓", "beating heart"], ["💗", "growing heart"], ["💖", "sparkling heart"], ["💘", "heart arrow"], ["💝", "heart ribbon"], ["💟", "heart decoration"], ["❣️", "heart exclamation"],
+      ["🔥", "fire"], ["✨", "sparkles"], ["⭐", "star"], ["🌟", "glowing star"], ["💫", "dizzy"], ["💥", "boom"], ["💯", "hundred"], ["💢", "anger symbol"],
+      ["❗", "exclamation"], ["❓", "question"], ["‼️", "double exclamation"], ["⁉️", "question exclamation"], ["✅", "check"], ["❌", "cross"], ["⚠️", "warning"], ["🚫", "prohibited"],
+      ["⭕", "circle"], ["❎", "cross mark"], ["✔️", "check mark"], ["☑️", "check box"], ["➕", "plus"], ["➖", "minus"], ["✖️", "multiply"], ["➗", "divide"],
+      ["♾️", "infinity"], ["💲", "dollar"], ["🔴", "red circle"], ["🟠", "orange circle"], ["🟡", "yellow circle"], ["🟢", "green circle"], ["🔵", "blue circle"], ["🟣", "purple circle"],
+      ["⚫", "black circle"], ["⚪", "white circle"], ["🟤", "brown circle"], ["🔺", "red triangle"], ["🔻", "down triangle"], ["🔶", "orange diamond"], ["🔷", "blue diamond"], ["🔸", "small orange diamond"],
+      ["🔹", "small blue diamond"], ["▪️", "black square"], ["▫️", "white square"], ["◾", "black medium square"], ["◽", "white medium square"], ["©️", "copyright"], ["®️", "registered"], ["™️", "trademark"],
+      ["#️⃣", "hash"], ["*️⃣", "asterisk"], ["0️⃣", "zero"], ["1️⃣", "one"], ["2️⃣", "two"], ["3️⃣", "three"], ["4️⃣", "four"], ["5️⃣", "five"],
+      ["6️⃣", "six"], ["7️⃣", "seven"], ["8️⃣", "eight"], ["9️⃣", "nine"], ["🔟", "ten"], ["🔤", "letters"], ["🔠", "uppercase"], ["🔡", "lowercase"],
     ],
   },
 ];
@@ -171,7 +199,14 @@ export default function EmojiPicker({ onSelect }) {
 
       <div className="emoji-picker-body">
         <nav className="emoji-category-rail" aria-label="Categorias de emoji">
-          <button type="button" className={!query ? "category-button recent" : "category-button"} onClick={() => { setQuery(""); setActiveCategory("people"); }} aria-label="Recentes">◷</button>
+          <button
+            type="button"
+            className={!query ? "category-button recent" : "category-button"}
+            onClick={() => { setQuery(""); setActiveCategory("people"); }}
+            aria-label="Recentes"
+          >
+            ◷
+          </button>
           {CATEGORIES.map((category) => (
             <button
               key={category.id}
@@ -207,7 +242,7 @@ export default function EmojiPicker({ onSelect }) {
       </div>
 
       <div className="emoji-picker-footer">
-        <span className="emoji-preview">{filtered[0]?.[0] || "🙂"}</span>
+        <span className="emoji-preview">{filtered[0]?.[0] || RECENT[0] || "🙂"}</span>
         <span>Selecione um emoji</span>
       </div>
     </div>
