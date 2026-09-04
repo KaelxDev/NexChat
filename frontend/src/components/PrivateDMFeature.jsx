@@ -3,7 +3,7 @@ import { createWebSocket } from "../services/websocket";
 import { getDirectMessageHistory } from "../services/directMessages";
 import MessageContextMenu from "./MessageContextMenu";
 import EmojiPicker from "./EmojiPickerExtra";
-import { normalizeAvatarUrl, userInitial, copyText } from "../utils/chat";
+import { copyText, normalizeAvatarUrl, userInitial } from "../utils/chat";
 
 const HISTORY_LIMIT = 50;
 const CACHE_LIMIT = 100;
@@ -25,7 +25,9 @@ function readCache(key) {
 function writeCache(key, messages) {
   try {
     localStorage.setItem(key, JSON.stringify(messages.slice(-CACHE_LIMIT)));
-  } catch {}
+  } catch (error) {
+    console.debug("Cache DM indisponível:", error);
+  }
 }
 
 function formatTime(value) {
@@ -34,8 +36,8 @@ function formatTime(value) {
   return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
-function sameMessage(a, b) {
-  return String(a?.messageId || "") === String(b?.messageId || "");
+function messageIsMine(message, userId) {
+  return String(message?.senderId ?? message?.userId) === String(userId);
 }
 
 export default function PrivateDMFeature() {
@@ -50,9 +52,10 @@ export default function PrivateDMFeature() {
   const [reactionPickerId, setReactionPickerId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
-  const [longPressTimer, setLongPressTimer] = useState(null);
+  const longPressRef = useRef(null);
   const socketRef = useRef(null);
   const messagesRef = useRef(null);
   const targetRef = useRef(null);
@@ -64,10 +67,13 @@ export default function PrivateDMFeature() {
 
   useEffect(() => {
     let active = true;
-    fetch(`${import.meta.env.VITE_API_URL || "https://nexchat-backend-2cyf.onrender.com/api/auth"}/me`, { credentials: "include" })
-      .then((response) => response.json().catch(() => null).then((data) => ({ response, data })))
-      .then(({ response, data }) => { if (active && response.ok && data?.user) setCurrentUser(data.user); })
-      .catch(() => {});
+    const apiUrl = import.meta.env.VITE_API_URL || "https://nexchat-backend-2cyf.onrender.com/api/auth";
+    fetch(`${apiUrl}/me`, { credentials: "include" })
+      .then(async (response) => ({ response, data: await response.json().catch(() => null) }))
+      .then(({ response, data }) => {
+        if (active && response.ok && data?.user) setCurrentUser(data.user);
+      })
+      .catch((requestError) => console.debug("Sessão DM:", requestError));
     return () => { active = false; };
   }, []);
 
@@ -77,34 +83,51 @@ export default function PrivateDMFeature() {
       if (!trigger || trigger.dataset.dmSelf === "true") return;
       event.preventDefault();
       event.stopPropagation();
-      setError("");
-      setContextMenu(null);
-      setReactionPickerId(null);
+      const id = Number(trigger.dataset.dmUserId);
+      if (!Number.isFinite(id)) return;
       setTarget({
-        id: Number(trigger.dataset.dmUserId),
+        id,
         username: trigger.dataset.dmUsername || "usuario",
         displayName: trigger.dataset.dmDisplayName || trigger.dataset.dmUsername || "Usuário",
         avatar: trigger.dataset.dmAvatar || "",
         online: trigger.dataset.dmOnline === "true",
       });
+      setError("");
     }
+
+    function openFromNotification(event) {
+      const data = event.detail || {};
+      const id = Number(data.senderId ?? data.userId);
+      if (!Number.isFinite(id)) return;
+      setTarget({
+        id,
+        username: data.username || "usuario",
+        displayName: data.displayName || data.username || "Usuário",
+        avatar: data.avatar || "",
+        online: true,
+      });
+    }
+
     document.addEventListener("click", openFromSidebar, true);
-    return () => document.removeEventListener("click", openFromSidebar, true);
+    window.addEventListener("pokinex:open-dm", openFromNotification);
+    return () => {
+      document.removeEventListener("click", openFromSidebar, true);
+      window.removeEventListener("pokinex:open-dm", openFromNotification);
+    };
   }, []);
 
   useEffect(() => {
-    function close(event) {
-      if (event.key === "Escape") {
-        setTarget(null);
-        setContextMenu(null);
-        setReactionPickerId(null);
-        setEditingId(null);
-        setReplyingTo(null);
-        setEmojiOpen(false);
-      }
+    function closeAll(event) {
+      if (event.key !== "Escape") return;
+      setContextMenu(null);
+      setReactionPickerId(null);
+      setEmojiOpen(false);
+      setEditingId(null);
+      setReplyingTo(null);
+      setTarget(null);
     }
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    window.addEventListener("keydown", closeAll);
+    return () => window.removeEventListener("keydown", closeAll);
   }, []);
 
   useEffect(() => {
@@ -122,8 +145,10 @@ export default function PrivateDMFeature() {
     setError("");
     setContextMenu(null);
     setReactionPickerId(null);
-    setReplyingTo(null);
     setEditingId(null);
+    setEditingText("");
+    setEditSaving(false);
+    setReplyingTo(null);
     setEmojiOpen(false);
     setLoading(true);
 
@@ -144,15 +169,17 @@ export default function PrivateDMFeature() {
       onMessage(data) {
         const liveTarget = targetRef.current;
         const liveUser = currentUserRef.current;
-        if (!liveTarget || !liveUser) return;
+        if (!liveTarget || !liveUser || !data?.type) return;
+        const senderId = Number(data.senderId ?? data.userId);
+        const recipientId = Number(data.recipientId);
+        const pairMatch =
+          (senderId === Number(liveUser.id) && recipientId === Number(liveTarget.id)) ||
+          (senderId === Number(liveTarget.id) && recipientId === Number(liveUser.id));
+        if (!pairMatch) return;
 
-        if (data?.type === "direct_message") {
-          const participantMatch =
-            (Number(data.senderId) === Number(liveUser.id) && Number(data.recipientId) === Number(liveTarget.id)) ||
-            (Number(data.senderId) === Number(liveTarget.id) && Number(data.recipientId) === Number(liveUser.id));
-          if (!participantMatch) return;
+        if (data.type === "direct_message") {
           setMessages((current) => {
-            if (current.some((item) => sameMessage(item, data))) return current;
+            if (current.some((item) => String(item.messageId) === String(data.messageId))) return current;
             const next = [...current, data];
             writeCache(conversationKey(liveUser.id, liveTarget.id), next);
             return next;
@@ -160,9 +187,20 @@ export default function PrivateDMFeature() {
           return;
         }
 
-        if (data?.type === "direct_message_edited" || data?.type === "direct_message_deleted") {
+        if (data.type === "direct_message_edited") {
           setMessages((current) => {
-            const next = current.map((item) => item.messageId === data.messageId ? { ...item, ...data, deleted: data.type === "direct_message_deleted" || data.deleted, message: data.deleted ? "Esta mensagem foi excluída" : data.message } : item);
+            const next = current.map((item) => item.messageId === data.messageId ? { ...item, ...data } : item);
+            writeCache(conversationKey(liveUser.id, liveTarget.id), next);
+            return next;
+          });
+          setEditingId(null);
+          setEditSaving(false);
+          return;
+        }
+
+        if (data.type === "direct_message_deleted") {
+          setMessages((current) => {
+            const next = current.map((item) => item.messageId === data.messageId ? { ...item, ...data, deleted: true, message: "Esta mensagem foi excluída" } : item);
             writeCache(conversationKey(liveUser.id, liveTarget.id), next);
             return next;
           });
@@ -170,16 +208,24 @@ export default function PrivateDMFeature() {
           return;
         }
 
-        if (data?.type === "direct_message_reaction") {
+        if (data.type === "direct_message_reaction") {
           setMessages((current) => {
             const next = current.map((item) => item.messageId === data.messageId ? { ...item, reactions: data.reactions || {} } : item);
             writeCache(conversationKey(liveUser.id, liveTarget.id), next);
             return next;
           });
+          setReactionPickerId(null);
+          return;
+        }
+
+        if (data.type === "error" && String(data.action || "").startsWith("direct_message")) {
+          setError(data.message || "Não foi possível concluir a ação.");
+          setEditSaving(false);
         }
       },
-      onError: (socketError) => console.debug("DM:", socketError),
+      onError: (socketError) => console.debug("DM websocket:", socketError),
     });
+
     socketRef.current = socket;
     return () => {
       socket.close();
@@ -188,21 +234,16 @@ export default function PrivateDMFeature() {
   }, [target, currentUser?.id]);
 
   useEffect(() => {
-    const container = messagesRef.current;
-    if (container) container.scrollTop = container.scrollHeight;
+    const node = messagesRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
   }, [messages]);
-
-  function updateLocal(mutator) {
-    setMessages((current) => {
-      const next = mutator(current);
-      if (currentUser?.id && target?.id) writeCache(conversationKey(currentUser.id, target.id), next);
-      return next;
-    });
-  }
 
   function insertEmoji(emoji) {
     const textarea = inputRef.current;
-    if (!textarea) { setInput((value) => `${value}${emoji}`); return; }
+    if (!textarea) {
+      setInput((value) => `${value}${emoji}`);
+      return;
+    }
     const start = textarea.selectionStart ?? input.length;
     const end = textarea.selectionEnd ?? input.length;
     const next = `${input.slice(0, start)}${emoji}${input.slice(end)}`;
@@ -215,11 +256,11 @@ export default function PrivateDMFeature() {
   }
 
   function sendMessage(event) {
-    event?.preventDefault();
+    event.preventDefault();
     const text = input.trim();
-    if (!text || !target || !connected || !socketRef.current) return;
+    if (!text || !target || !connected) return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    if (!socketRef.current.sendDirectMessage(text, id, target.id, replyingTo?.messageId || null)) return;
+    if (!socketRef.current?.sendDirectMessage(text, id, target.id, replyingTo?.messageId || null)) return;
     setInput("");
     setReplyingTo(null);
     setEmojiOpen(false);
@@ -228,25 +269,29 @@ export default function PrivateDMFeature() {
   function openContextMenu(event, message) {
     event.preventDefault();
     event.stopPropagation();
-    const isMine = Number(message.senderId ?? message.userId) === Number(currentUser?.id);
     setReactionPickerId(null);
-    setContextMenu({ x: Math.max(8, Math.min(event.clientX, window.innerWidth - 190)), y: Math.max(8, Math.min(event.clientY, window.innerHeight - 230)), message, isMine });
+    setContextMenu({
+      x: Math.max(8, Math.min(event.clientX, window.innerWidth - 190)),
+      y: Math.max(8, Math.min(event.clientY, window.innerHeight - 230)),
+      message,
+      isMine: messageIsMine(message, currentUser?.id),
+    });
   }
 
   function startLongPress(event, message) {
     if (event.touches?.length !== 1) return;
-    clearTimeout(longPressTimer);
-    const timer = window.setTimeout(() => {
+    clearTimeout(longPressRef.current);
+    longPressRef.current = window.setTimeout(() => {
       const touch = event.touches[0];
-      openContextMenu({ preventDefault(){}, stopPropagation(){}, clientX: touch.clientX, clientY: touch.clientY }, message);
+      openContextMenu({ preventDefault() {}, stopPropagation() {}, clientX: touch.clientX, clientY: touch.clientY }, message);
       navigator.vibrate?.(20);
     }, 550);
-    setLongPressTimer(timer);
   }
 
-  function endLongPress() { clearTimeout(longPressTimer); }
+  function endLongPress() { clearTimeout(longPressRef.current); }
 
   function beginEdit(message) {
+    if (!messageIsMine(message, currentUser?.id) || message.deleted) return;
     setContextMenu(null);
     setEditingId(message.messageId);
     setEditingText(message.message || "");
@@ -256,37 +301,46 @@ export default function PrivateDMFeature() {
   }
 
   function saveEdit(event) {
-    event?.preventDefault();
+    event.preventDefault();
     const text = editingText.trim();
-    if (!text || !editingId || !socketRef.current || !connected) return;
-    if (!socketRef.current.sendDirectEditMessage(editingId, text)) return;
-    updateLocal((current) => current.map((item) => item.messageId === editingId ? { ...item, message: text, edited: true, editedAt: new Date().toISOString() } : item));
-    setEditingId(null);
-    setEditingText("");
+    if (!editingId || !text || !connected) return;
+    if (!socketRef.current?.sendDirectEditMessage(editingId, text)) return;
+    setEditSaving(true);
   }
 
   function deleteMessage(message) {
     setContextMenu(null);
-    if (!message?.messageId || !socketRef.current || !connected) return;
+    if (!messageIsMine(message, currentUser?.id) || message.deleted || !connected) return;
     if (!window.confirm("Excluir esta mensagem privada?")) return;
-    if (!socketRef.current.sendDirectDeleteMessage(message.messageId)) return;
-    updateLocal((current) => current.map((item) => item.messageId === message.messageId ? { ...item, deleted: true, message: "Esta mensagem foi excluída" } : item));
+    socketRef.current?.sendDirectDeleteMessage(message.messageId);
   }
 
-  function react(messageId, reaction) {
-    if (!socketRef.current || !connected) return;
-    socketRef.current.sendDirectReaction(messageId, reaction);
-    setReactionPickerId(null);
+  function beginReply(message) {
+    if (message.deleted) return;
     setContextMenu(null);
+    setReactionPickerId(null);
+    setEditingId(null);
+    setReplyingTo(message);
+    requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   async function copyMessage(message) {
     if (message.deleted) return;
-    try { await copyText(message.message); } catch {}
+    try { await copyText(message.message || ""); } catch {}
     setContextMenu(null);
   }
 
+  function react(messageId, reaction) {
+    if (!connected) return;
+    if (socketRef.current?.sendDirectReaction(messageId, reaction)) {
+      setReactionPickerId(null);
+      setContextMenu(null);
+    }
+  }
+
   if (!target) return null;
+
+  const targetAvatar = normalizeAvatarUrl(target.avatar, target.id);
 
   return (
     <section className="private-dm-overlay" aria-label={`Conversa privada com ${target.displayName}`}>
@@ -294,7 +348,7 @@ export default function PrivateDMFeature() {
         <div className="private-dm-person">
           <button className="private-dm-back" type="button" onClick={() => setTarget(null)} aria-label="Voltar">←</button>
           <div className="private-dm-avatar">
-            {normalizeAvatarUrl(target.avatar, target.id) ? <img src={normalizeAvatarUrl(target.avatar, target.id)} alt="" /> : userInitial(target)}
+            {targetAvatar ? <img src={targetAvatar} alt="" /> : userInitial(target)}
             <span className={target.online ? "online" : "offline"} />
           </div>
           <div><strong>{target.displayName}</strong><span>@{target.username}</span></div>
@@ -302,14 +356,15 @@ export default function PrivateDMFeature() {
         <div className="private-dm-status"><span className={connected ? "connected" : "disconnected"} />{connected ? "Privado" : "Reconectando"}</div>
       </header>
 
-      <div className="private-dm-messages" ref={messagesRef}>
+      <div className="private-dm-messages" ref={messagesRef} onClick={() => { setContextMenu(null); setReactionPickerId(null); }}>
         {loading && messages.length === 0 && <div className="private-dm-loading">Carregando conversa...</div>}
         {!loading && messages.length === 0 && <div className="private-dm-empty"><div className="private-dm-lock">⌁</div><span>MENSAGEM DIRETA</span><h2>Conversa privada</h2><p>Somente você e <strong>@{target.username}</strong> recebem estas mensagens.</p></div>}
 
         {messages.map((message) => {
-          const mine = Number(message.senderId ?? message.userId) === Number(currentUser?.id);
+          const mine = messageIsMine(message, currentUser?.id);
           const avatar = normalizeAvatarUrl(message.avatar, message.senderId);
-          const reactions = message.reactions || {};
+          const reactions = Object.entries(message.reactions || {});
+
           return (
             <article
               className={`private-dm-message ${mine ? "mine" : "other"}`}
@@ -322,45 +377,95 @@ export default function PrivateDMFeature() {
               <div className="private-dm-message-row">
                 {!mine && <div className="private-dm-message-avatar">{avatar ? <img src={avatar} alt="" /> : userInitial(message)}</div>}
                 <div className="private-dm-message-content">
-                  <div className="private-dm-meta"><strong>{message.displayName || message.username}</strong><time>{formatTime(message.timestamp)}{message.edited ? " · editada" : ""}</time></div>
-                  {message.replyTo && <button className="private-dm-reply-preview" type="button" onClick={() => document.getElementById(`dm-${message.replyTo.messageId}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}><span>↩ {message.replyTo.displayName}</span><small>{message.replyTo.message}</small></button>}
-                  {editingId === message.messageId ? (
+                  <div className="private-dm-meta"><strong>{message.displayName || message.username || target.displayName}</strong><time>{formatTime(message.timestamp)}{message.edited ? " · editada" : ""}</time></div>
+
+                  {message.replyTo && (
+                    <button className="private-dm-reply-preview" type="button" onClick={() => document.getElementById(`dm-${message.replyTo.messageId}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}>
+                      <span>↩ {message.replyTo.displayName || message.replyTo.username}</span>
+                      <small>{message.replyTo.message || "Esta mensagem foi excluída"}</small>
+                    </button>
+                  )}
+
+                  {editingId === message.messageId && mine && !message.deleted ? (
                     <form className="private-dm-edit-form" onSubmit={saveEdit}>
                       <textarea className="private-dm-edit-input" value={editingText} onChange={(event) => setEditingText(event.target.value)} rows={2} maxLength={1000} />
-                      <div><button type="button" onClick={() => setEditingId(null)}>Cancelar</button><button type="submit" disabled={!editingText.trim()}>Salvar</button></div>
+                      <div>
+                        <button type="button" onClick={() => { setEditingId(null); setEditingText(""); }}>Cancelar</button>
+                        <button type="submit" disabled={!editingText.trim() || editSaving}>{editSaving ? "Salvando..." : "Salvar"}</button>
+                      </div>
                     </form>
                   ) : (
                     <div className={`private-dm-bubble${message.deleted ? " deleted" : ""}`} id={`dm-${message.messageId}`}>
                       {message.deleted ? "Esta mensagem foi excluída" : message.message}
-                      {Object.entries(reactions).length > 0 && <span className="private-dm-reactions">{Object.entries(reactions).map(([emoji, count]) => <button type="button" key={emoji} onClick={() => react(message.messageId, emoji)}>{emoji} <b>{count}</b></button>)}</span>}
                     </div>
                   )}
-                  {!message.deleted && <button className="private-dm-react-hint" type="button" onClick={() => setReactionPickerId((id) => id === message.messageId ? null : message.messageId)}>＋ Reagir</button>}
-                  {reactionPickerId === message.messageId && <div className="private-dm-reaction-picker">{REACTIONS.map((reaction) => <button key={reaction} type="button" onClick={() => react(message.messageId, reaction)}>{reaction}</button>)}</div>}
+
+                  {reactions.length > 0 && (
+                    <div className="private-dm-reactions">
+                      {reactions.map(([reaction, count]) => (
+                        <button key={reaction} type="button" onClick={() => react(message.messageId, reaction)}>{reaction} <b>{count}</b></button>
+                      ))}
+                    </div>
+                  )}
+
+                  {!message.deleted && !editingId && (
+                    <button className="private-dm-react-hint" type="button" onClick={() => setReactionPickerId((id) => id === message.messageId ? null : message.messageId)}>＋ Reagir</button>
+                  )}
+
+                  {reactionPickerId === message.messageId && !message.deleted && (
+                    <div className="private-dm-reaction-picker" onClick={(event) => event.stopPropagation()}>
+                      {REACTIONS.map((reaction) => <button key={reaction} type="button" onClick={() => react(message.messageId, reaction)}>{reaction}</button>)}
+                    </div>
+                  )}
                 </div>
-                {mine && <div className="private-dm-message-avatar">{avatar ? <img src={avatar} alt="" /> : userInitial(message)}</div>}
+                {mine && <div className="private-dm-message-avatar">{avatar ? <img src={avatar} alt="" /> : userInitial(currentUser)}</div>}
               </div>
             </article>
           );
         })}
       </div>
 
-      {contextMenu && <MessageContextMenu contextMenu={contextMenu} onReact={() => { setReactionPickerId(contextMenu.message.messageId); setContextMenu(null); }} onReply={() => { setReplyingTo(contextMenu.message); setContextMenu(null); setReactionPickerId(null); inputRef.current?.focus(); }} onCopy={() => copyMessage(contextMenu.message)} onEdit={() => contextMenu.isMine && beginEdit(contextMenu.message)} onDelete={() => contextMenu.isMine && deleteMessage(contextMenu.message)} />}
-
       {error && <div className="private-dm-error">{error}</div>}
 
-      <div className="private-dm-composer-zone">
-        {replyingTo && <div className="private-dm-reply-composer"><div><span>Respondendo a {replyingTo.displayName}</span><strong>{replyingTo.deleted ? "Esta mensagem foi excluída" : replyingTo.message}</strong></div><button type="button" onClick={() => setReplyingTo(null)}>✕</button></div>}
-        <form className="private-dm-composer" onSubmit={sendMessage}>
-          <div className="private-dm-input-shell">
-            {emojiOpen && <EmojiPicker onSelect={insertEmoji} />}
-            <textarea ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} placeholder={`Mensagem para @${target.username}`} rows={1} maxLength={1000} disabled={!connected} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendMessage(event); } }} />
-            <button className={`private-dm-emoji-toggle${emojiOpen ? " active" : ""}`} type="button" onClick={() => setEmojiOpen((value) => !value)} aria-label="Emojis">☺️</button>
-          </div>
-          <button className="private-dm-send" type="submit" disabled={!connected || !input.trim()}>↑</button>
-        </form>
-        <div className="private-dm-hint">Enter envia · Shift + Enter quebra a linha</div>
-      </div>
+      {replyingTo && (
+        <div className="private-dm-reply-composer">
+          <div><span>Respondendo a {replyingTo.displayName || replyingTo.username}</span><strong>{replyingTo.deleted ? "Esta mensagem foi excluída" : replyingTo.message}</strong></div>
+          <button type="button" onClick={() => setReplyingTo(null)} aria-label="Cancelar resposta">✕</button>
+        </div>
+      )}
+
+      <form className="private-dm-composer" onSubmit={sendMessage}>
+        <div className="private-dm-input-shell">
+          {emojiOpen && <EmojiPicker onSelect={insertEmoji} />}
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage(event);
+              }
+            }}
+            placeholder={`Mensagem para @${target.username}`}
+            rows={1}
+            maxLength={1000}
+            disabled={!connected}
+          />
+          <button className={`private-dm-emoji-toggle${emojiOpen ? " active" : ""}`} type="button" onClick={() => setEmojiOpen((value) => !value)} aria-label="Abrir seletor de emojis" aria-expanded={emojiOpen}>☺️</button>
+        </div>
+        <button className="private-dm-send" type="submit" disabled={!connected || !input.trim()} aria-label="Enviar mensagem privada">↑</button>
+      </form>
+      <div className="private-dm-hint">Enter envia · Shift + Enter quebra a linha</div>
+
+      <MessageContextMenu
+        contextMenu={contextMenu}
+        onReact={() => { setReactionPickerId(contextMenu?.message?.messageId || null); setContextMenu(null); }}
+        onReply={() => contextMenu && beginReply(contextMenu.message)}
+        onCopy={() => contextMenu && copyMessage(contextMenu.message)}
+        onEdit={() => contextMenu && beginEdit(contextMenu.message)}
+        onDelete={() => contextMenu && deleteMessage(contextMenu.message)}
+      />
     </section>
   );
 }
