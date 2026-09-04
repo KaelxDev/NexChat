@@ -1,3 +1,41 @@
+.composer-input-shell {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.composer-input-shell textarea {
+  width: 100%;
+  padding-right: 52px;
+}
+
+.composer-emoji-toggle {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  min-height: 34px !important;
+  padding: 0 !important;
+  display: grid;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #c6cad3 !important;
+  box-shadow: none !important;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.composer-emoji-toggle:hover,
+.composer-emoji-toggle.active {
+  background: #30333b !important;
+  color: #fff !important;
+}
+
 .emoji-picker {
   position: absolute;
   z-index: 30;
