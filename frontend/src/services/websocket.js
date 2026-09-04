@@ -85,8 +85,17 @@ export function createWebSocket(
     sendMessage(message, messageId = null) {
       return send({ type: "message", message, messageId });
     },
-    sendDirectMessage(message, messageId = null, recipientId) {
-      return send({ type: "direct_message", message, messageId, recipientId });
+    sendDirectMessage(message, messageId = null, recipientId, replyTo = null) {
+      return send({ type: "direct_message", message, messageId, recipientId, replyTo });
+    },
+    sendDirectEditMessage(messageId, message) {
+      return send({ type: "direct_message_edit", messageId, message });
+    },
+    sendDirectDeleteMessage(messageId) {
+      return send({ type: "direct_message_delete", messageId });
+    },
+    sendDirectReaction(messageId, reaction) {
+      return send({ type: "direct_message_reaction", messageId, reaction });
     },
     sendEditMessage(messageId, message) {
       return send({ type: "edit_message", messageId, message });
