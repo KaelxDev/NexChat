@@ -32,55 +32,78 @@ export default function AuthScreen({ onAuthenticated }) {
   }
 
   return (
-    <main className="app">
+    <main className="app auth-page">
       <section className="login">
         <div className="auth-brand">
           <img src="/icone.png?v=2" alt="" />
           <div className="auth-brand-copy">
+            <div className="auth-kicker">CONEXÃO PRIVADA</div>
             <h1>Pokinex</h1>
             <span>Comunicação em tempo real</span>
           </div>
         </div>
 
-        <p>
-          {mode === "login"
-            ? "Entre na sua conta para conversar em tempo real."
-            : "Crie sua conta para começar a usar o Pokinex."}
-        </p>
+        <div className="auth-intro">
+          <span className="auth-status-dot" />
+          <p>
+            {mode === "login"
+              ? "Entre e continue sua conversa de onde parou."
+              : "Crie sua conta e entre na conversa."}
+          </p>
+        </div>
 
         {error && <div className="status disconnected">🔴 {error}</div>}
 
         <form className="login-form" onSubmit={submit}>
-          <input
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            placeholder="Username"
-            minLength={3}
-            maxLength={20}
-            autoFocus
-          />
-          <input
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            type="password"
-            placeholder="Senha"
-            minLength={8}
-            maxLength={128}
-          />
-          <button type="submit" disabled={loading}>
-            {loading
-              ? "Aguarde..."
-              : mode === "login"
-                ? "Entrar"
-                : "Criar conta"}
+          <label className="auth-field">
+            <span>Username</span>
+            <input
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="Seu username"
+              minLength={3}
+              maxLength={20}
+              autoComplete="username"
+              autoFocus
+            />
+          </label>
+
+          <label className="auth-field">
+            <span>Senha</span>
+            <input
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              type="password"
+              placeholder="Sua senha"
+              minLength={8}
+              maxLength={128}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+            />
+          </label>
+
+          <button className="auth-submit" type="submit" disabled={loading}>
+            <span>{loading ? "Aguarde..." : mode === "login" ? "Entrar" : "Criar conta"}</span>
+            <span aria-hidden="true">→</span>
           </button>
         </form>
 
+        <div className="auth-divider">
+          <span />
+          <small>{mode === "login" ? "Primeiro acesso?" : "Já possui uma conta?"}</small>
+          <span />
+        </div>
+
         <button className="auth-switch" type="button" onClick={switchMode}>
-          {mode === "login"
-            ? "Ainda não tenho uma conta"
-            : "Já tenho uma conta"}
+          {mode === "login" ? "Criar uma conta" : "Voltar para entrar"}
         </button>
+
+        <div className="auth-footer">
+          <span>Pokinex</span>
+          <span aria-hidden="true">•</span>
+          <span>WebSocket</span>
+          <span aria-hidden="true">•</span>
+          <span>Tempo real</span>
+        </div>
       </section>
     </main>
   );
