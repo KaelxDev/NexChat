@@ -8,6 +8,11 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadByUser, setUnreadByUser] = useState({});
 
+  const isModerator = useMemo(
+    () => users.some((item) => String(item.id) === String(user?.id) && item.role === "moderator"),
+    [users, user?.id],
+  );
+
   useEffect(() => {
     const toggle = () => setMobileOpen((current) => !current);
     const close = () => setMobileOpen(false);
@@ -130,7 +135,9 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
               const onlineAvatar = normalizeAvatarUrl(onlineUser.avatar, onlineUser.id);
               const name = onlineUser.displayName || onlineUser.username || "Usuário";
               const isSelf = String(onlineUser.id) === String(user?.id);
-              const canDM = !isSelf && Number.isFinite(Number(onlineUser.id));
+              const isBot = onlineUser.role === "bot" || String(onlineUser.id) === "moderation-bot";
+              const isOnlineModerator = onlineUser.role === "moderator";
+              const canDM = !isSelf && !isBot && Number.isFinite(Number(onlineUser.id));
               const unread = Number(unreadByUser[onlineUser.id] || 0);
 
               return (
@@ -148,20 +155,24 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
                     title={
                       isSelf
                         ? "Você"
-                        : canDM
-                          ? `Enviar mensagem privada para ${name}`
-                          : "Mensagem privada indisponível"
+                        : isBot
+                          ? "PokiBot • moderador automático"
+                          : canDM
+                            ? `Enviar mensagem privada para ${name}`
+                            : "Mensagem privada indisponível"
                     }
                     onClick={handleDMClick}
                   >
-                    <div className="avatar user-avatar">
+                    <div className={`avatar user-avatar${isBot ? " bot-avatar" : ""}`}>
                       {onlineAvatar ? <img src={onlineAvatar} alt="" /> : userInitial(onlineUser)}
                       <span className="user-online-indicator" aria-hidden="true" />
                     </div>
                     <div className="user-info">
                       <strong>{name}</strong>
-                      <span>{onlineUser.username ? `@${onlineUser.username}` : "Sistema"}</span>
+                      <span>{isBot ? "Moderação automática" : onlineUser.username ? `@${onlineUser.username}` : "Sistema"}</span>
                     </div>
+                    {isBot && <span className="user-role-badge bot">BOT</span>}
+                    {!isBot && isOnlineModerator && <span className="user-role-badge moderator">MOD</span>}
                     {canDM && (
                       <span className="user-dm-meta" aria-hidden="true">
                         {unread > 0 ? <b className="dm-unread-badge">{unread > 99 ? "99+" : unread}</b> : <span className="user-dm-hint">✉</span>}
@@ -183,6 +194,7 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
                 <strong>{displayName}</strong>
                 <span>@{user.username}</span>
               </div>
+              {isModerator && <span className="profile-role-badge">MOD</span>}
               <span className="profile-arrow" aria-hidden="true">↗</span>
             </button>
 
