@@ -55,7 +55,7 @@ async def send_direct_message(
             )
             return
 
-    event = {
+    base_event = {
         "type": "direct_message",
         "messageId": message_id,
         "senderId": sender_user["id"],
@@ -73,10 +73,18 @@ async def send_direct_message(
         "offline": False,
     }
 
-    recipients = {int(sender_user["id"]), recipient_id}
+    sender_id = int(sender_user["id"])
+    recipient_id = int(recipient_id)
+
     for websocket, current_user in list(manager.active_connections.items()):
-        if int(current_user["id"]) not in recipients:
+        current_id = int(current_user["id"])
+        if current_id == recipient_id:
+            event = {**base_event, "notifyRecipient": True}
+        elif current_id == sender_id:
+            event = {**base_event, "notifyRecipient": False}
+        else:
             continue
+
         try:
             await websocket.send_json(event)
         except Exception:
