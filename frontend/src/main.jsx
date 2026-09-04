@@ -26,9 +26,12 @@ import './MessageFlowFix.css'
 import './PrivateDM.css'
 import './MobileShell.css'
 import './MobileDrawerFinal.css'
+import './DirectMessageNotification.css'
 import AutoMessageScroll from './AutoMessageScroll.jsx'
 import AppEdit from './AppEdit.jsx'
 import PrivateDMFeature from './components/PrivateDMFeature.jsx'
+import DirectMessageNotifier from './components/DirectMessageNotifier.jsx'
+import DirectMessageNotificationBridge from './components/DirectMessageNotificationBridge.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -36,5 +39,7 @@ createRoot(document.getElementById('root')).render(
       <AppEdit />
     </AutoMessageScroll>
     <PrivateDMFeature />
+    <DirectMessageNotifier />
+    <DirectMessageNotificationBridge />
   </StrictMode>,
 )
