@@ -7,6 +7,14 @@ export default function ChatSidebar({ user, profile, users, onOpenProfile, onCle
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
+        <div className="pokinex-brand" aria-label="Pokinex">
+          <img src="/icone.png?v=2" alt="" />
+          <div className="pokinex-brand-copy">
+            <strong>Pokinex</strong>
+            <span>Comunicação em tempo real</span>
+          </div>
+        </div>
+
         <button className="profile-summary" type="button" onClick={onOpenProfile}>
           <div className="avatar profile-avatar">
             {avatar ? <img src={avatar} alt="" /> : displayName.slice(0, 1).toUpperCase()}
