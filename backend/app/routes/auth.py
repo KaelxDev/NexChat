@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from functools import partial
+import time
 
 from anyio import to_thread
 from fastapi import APIRouter, File, Header, HTTPException, Request, Response, UploadFile, status
@@ -205,8 +206,7 @@ async def upload_avatar(
     )
 
     content_type = file.content_type or ""
-    extension = ALLOWED_IMAGE_TYPES.get(content_type)
-    if not extension:
+    if content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Formato de imagem não suportado.",
@@ -230,8 +230,8 @@ async def upload_avatar(
         content,
         content_type,
     )
-    avatar_url = str(request.base_url).rstrip("/") + avatar_path
-    return {"avatar": avatar_url + f"?v={int(__import__('time').time() * 1000)}"}
+    version = int(time.time() * 1000)
+    return {"avatar": f"{avatar_path}?v={version}"}
 
 
 @router.patch("/profile")
