@@ -74,6 +74,33 @@ def _postgres_or_sqlite(postgres_query: str, sqlite_query: str) -> str:
     return postgres_query if using_postgres() else sqlite_query
 
 
+def _persistent_avatar_reference(connection, user_id, fallback=""):
+    query = _postgres_or_sqlite(
+        "SELECT updated_at FROM user_avatars WHERE user_id = %s",
+        "SELECT updated_at FROM user_avatars WHERE user_id = ?",
+    )
+    row = connection.execute(query, (user_id,)).fetchone()
+    if not row:
+        return fallback or ""
+
+    version = str(row["updated_at"] or "")
+    return f"/api/auth/avatar/{user_id}?v={version}" if version else f"/api/auth/avatar/{user_id}"
+
+
+def _profile_from_row(connection, row):
+    if not row:
+        return None
+    user = {
+        "id": row["id"],
+        "username": row["username"],
+        "displayName": row["display_name"],
+        "avatar": row["avatar"] or "",
+        "status": row["status"],
+    }
+    user["avatar"] = _persistent_avatar_reference(connection, user["id"], user["avatar"])
+    return user
+
+
 def save_message(message_id, user_id, message, created_at, reply_to_message_id=None):
     connection = get_connection()
     try:
@@ -131,7 +158,11 @@ def get_message(message_id):
             """,
         )
         row = connection.execute(query, (message_id,)).fetchone()
-        return dict(row) if row else None
+        if not row:
+            return None
+        result = dict(row)
+        result["avatar"] = _persistent_avatar_reference(connection, result["user_id"], result["avatar"])
+        return result
     finally:
         connection.close()
 
