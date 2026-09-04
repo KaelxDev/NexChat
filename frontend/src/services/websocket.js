@@ -74,6 +74,9 @@ export function createWebSocket(
     sendMessage(message, messageId = null) {
       return send({ type: "message", message, messageId });
     },
+    sendDirectMessage(message, messageId = null, recipientId) {
+      return send({ type: "direct_message", message, messageId, recipientId });
+    },
     sendEditMessage(messageId, message) {
       return send({ type: "edit_message", messageId, message });
     },
