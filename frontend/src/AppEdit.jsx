@@ -34,6 +34,8 @@ export default function AppEdit() {
   const [profile, setProfile] = useState(null);
   const [profileError, setProfileError] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState("");
   const [contextMenu, setContextMenu] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -41,9 +43,14 @@ export default function AppEdit() {
   const [editError, setEditError] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [reactionPickerMessageId, setReactionPickerMessageId] = useState(null);
-  const avatarFileRef = useRef(null);
   const longPressRef = useRef(null);
   const mergeUserRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    };
+  }, [avatarPreviewUrl]);
 
   const mergeUser = useCallback((incoming) => {
     if (!incoming?.id) return;
@@ -65,8 +72,20 @@ export default function AppEdit() {
     setProfile(nextUser);
     if (nextUser?.id) {
       setProfilesById((current) => ({ ...current, [nextUser.id]: nextUser }));
+      setUsers((current) =>
+        current.map((item) =>
+          String(item.id) === String(nextUser.id) ? { ...item, ...nextUser } : item,
+        ),
+      );
+      setMessages((current) =>
+        current.map((item) =>
+          String(item.userId) === String(nextUser.id)
+            ? { ...item, ...nextUser }
+            : item,
+        ),
+      );
     }
-  }, [syncUser]);
+  }, [setMessages, syncUser]);
 
   useUserProfiles(
     messages,
@@ -479,6 +498,8 @@ export default function AppEdit() {
       setOfflineQueue([]);
       setProfile(null);
       setProfileOpen(false);
+      setSelectedAvatarFile(null);
+      setAvatarPreviewUrl("");
       setContextMenu(null);
       setReactionPickerMessageId(null);
       setReplyingTo(null);
@@ -501,9 +522,9 @@ export default function AppEdit() {
     const oldUsername = user.username;
 
     try {
-      let nextAvatar = profile?.avatar || "";
-      if (avatarFileRef.current) {
-        nextAvatar = await uploadAvatar(avatarFileRef.current);
+      let nextAvatar = profile?.avatar || user?.avatar || "";
+      if (selectedAvatarFile) {
+        nextAvatar = await uploadAvatar(selectedAvatarFile);
       }
 
       const updated = await updateProfile({
@@ -513,7 +534,8 @@ export default function AppEdit() {
         status: String(form.get("status") || "").trim(),
       });
 
-      avatarFileRef.current = null;
+      setSelectedAvatarFile(null);
+      setAvatarPreviewUrl("");
       syncProfile(updated);
       setProfileOpen(false);
     } catch (error) {
@@ -527,24 +549,27 @@ export default function AppEdit() {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
+      setProfileError("Escolha um arquivo de imagem válido.");
       event.target.value = "";
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      alert("Escolha uma imagem de até 2 MB.");
+      setProfileError("Escolha uma imagem de até 2 MB.");
       event.target.value = "";
       return;
     }
 
-    avatarFileRef.current = file;
-    const reader = new FileReader();
-    reader.onload = () =>
-      setProfile((current) => ({
-        ...(current || userRef.current),
-        avatar: String(reader.result),
-      }));
-    reader.readAsDataURL(file);
+    setProfileError("");
+    setSelectedAvatarFile(file);
+    setAvatarPreviewUrl(URL.createObjectURL(file));
     event.target.value = "";
+  }
+
+  function closeProfile() {
+    setSelectedAvatarFile(null);
+    setAvatarPreviewUrl("");
+    setProfileError("");
+    setProfileOpen(false);
   }
 
   if (!authChecked) {
@@ -559,8 +584,6 @@ export default function AppEdit() {
   }
 
   if (!user) return <AuthScreen onAuthenticated={syncProfile} />;
-
-  const displayName = profile?.displayName || user.displayName || user.username;
 
   return (
     <main className="app">
@@ -632,12 +655,10 @@ export default function AppEdit() {
           open={profileOpen}
           user={user}
           profile={profile}
+          avatarPreview={avatarPreviewUrl}
           profileError={profileError}
           profileSaving={profileSaving}
-          onClose={() => {
-            avatarFileRef.current = null;
-            setProfileOpen(false);
-          }}
+          onClose={closeProfile}
           onSubmit={saveProfile}
           onChooseAvatar={chooseAvatar}
         />
