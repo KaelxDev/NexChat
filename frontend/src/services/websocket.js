@@ -1,4 +1,3 @@
-import { me } from "./auth";
 import { notifyDirectMessage } from "../notifications";
 
 const DEFAULT_WS_URL = "wss://nexchat-backend-2cyf.onrender.com/ws";
@@ -16,7 +15,6 @@ export function createWebSocket(
   let reconnectTimer = null;
   let reconnectAttempt = 0;
   let manuallyClosed = false;
-  const currentUserIdPromise = me().then((user) => Number(user?.id));
 
   function connect() {
     if (manuallyClosed) return;
@@ -29,29 +27,13 @@ export function createWebSocket(
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data?.type === "direct_message") {
-          void currentUserIdPromise
-            .then((currentUserId) => {
-              const senderId = Number(data.senderId ?? data.userId);
-              const recipientId = Number(data.recipientId);
-              if (
-                Number.isFinite(senderId) &&
-                Number.isFinite(recipientId) &&
-                Number.isFinite(currentUserId) &&
-                recipientId === currentUserId &&
-                senderId !== currentUserId
-              ) {
-                notifyDirectMessage({
-                  ...data,
-                  senderId,
-                  userId: senderId,
-                  displayName: data.displayName || data.username || "Usuário",
-                });
-              }
-            })
-            .catch((error) => {
-              console.debug("Não foi possível identificar a sessão para a notificação DM:", error);
-            });
+        if (data?.type === "direct_message" && data.notifyRecipient === true) {
+          notifyDirectMessage({
+            ...data,
+            senderId: Number(data.senderId ?? data.userId),
+            userId: Number(data.senderId ?? data.userId),
+            displayName: data.displayName || data.username || "Usuário",
+          });
         }
         onMessage?.(data);
       } catch (error) {
