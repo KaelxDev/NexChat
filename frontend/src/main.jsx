@@ -23,13 +23,16 @@ import './ConversationViewportFix.css'
 import './MessagePresentationFix.css'
 import './MessageAvatarFix.css'
 import './MessageFlowFix.css'
+import './PrivateDM.css'
 import AutoMessageScroll from './AutoMessageScroll.jsx'
 import AppEdit from './AppEdit.jsx'
+import PrivateDMFeature from './components/PrivateDMFeature.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AutoMessageScroll>
       <AppEdit />
     </AutoMessageScroll>
+    <PrivateDMFeature />
   </StrictMode>,
 )
