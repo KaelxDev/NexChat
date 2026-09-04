@@ -1,7 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import EmojiPicker from "./EmojiPicker";
 
 export default function MessageComposer({ connected, offlineQueueLength, replyingTo, messageInput, onChange, onSubmit, onCancelReply }) {
   const textareaRef = useRef(null);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -12,6 +14,25 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
     textarea.style.height = `${Math.max(44, nextHeight)}px`;
     textarea.scrollTop = textarea.scrollHeight;
   }, [messageInput]);
+
+  function insertEmoji(emoji) {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      onChange(`${messageInput}${emoji}`);
+      return;
+    }
+
+    const start = textarea.selectionStart ?? messageInput.length;
+    const end = textarea.selectionEnd ?? messageInput.length;
+    const nextValue = `${messageInput.slice(0, start)}${emoji}${messageInput.slice(end)}`;
+    onChange(nextValue);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const cursor = start + emoji.length;
+      textarea.setSelectionRange(cursor, cursor);
+    });
+  }
 
   return (
     <div className="composer-zone">
@@ -28,6 +49,8 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
 
       <form className="message-form" onSubmit={onSubmit}>
         <div className="composer-input-shell">
+          {emojiPickerOpen && <EmojiPicker onSelect={insertEmoji} />}
+
           <textarea
             ref={textareaRef}
             aria-label={replyingTo ? "Digite sua resposta" : "Digite sua mensagem"}
@@ -43,6 +66,20 @@ export default function MessageComposer({ connected, offlineQueueLength, replyin
               }
             }}
           />
+
+          <button
+            type="button"
+            className={`composer-emoji-toggle${emojiPickerOpen ? " active" : ""}`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setEmojiPickerOpen((current) => !current);
+            }}
+            aria-label={emojiPickerOpen ? "Fechar seletor de emojis" : "Abrir seletor de emojis"}
+            aria-expanded={emojiPickerOpen}
+          >
+            <span aria-hidden="true">☺️</span>
+          </button>
         </div>
         <button className="composer-send" type="submit" disabled={!messageInput.trim()} aria-label="Enviar mensagem">
           <span className="composer-send-label">Enviar</span>
