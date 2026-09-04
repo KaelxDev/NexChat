@@ -12,10 +12,12 @@ DEFAULT_ALLOWED_ORIGINS = frozenset(
     }
 )
 
-# Vercel creates unique preview URLs for branches/deployments. Keep the
-# allowlist scoped to the Pokinex project instead of accepting every Vercel app.
+# Vercel creates unique URLs for production deployments and previews. Keep
+# the allowlist scoped to the Pokinex project instead of accepting every
+# Vercel app. This covers the canonical domains plus generated deployment
+# hostnames such as pokinex-3h3yk3m58-kael-xd-ev.vercel.app.
 POKINEX_VERCEL_ORIGIN = re.compile(
-    r"^https://(?:pokinex|pokinex-chat)(?:-git-[a-z0-9][a-z0-9-]*-kael-xd-ev)?\.vercel\.app$"
+    r"^https://(?:pokinex|pokinex-chat)(?:-[a-z0-9][a-z0-9-]*)*\.vercel\.app$"
 )
 
 
