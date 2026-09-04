@@ -8,13 +8,14 @@ DEFAULT_ALLOWED_ORIGINS = frozenset(
         "https://nex-chat-one-eta.vercel.app",
         "https://nexchat-chat.vercel.app",
         "https://pokinex.vercel.app",
+        "https://pokinex-chat.vercel.app",
     }
 )
 
 # Vercel creates unique preview URLs for branches/deployments. Keep the
 # allowlist scoped to the Pokinex project instead of accepting every Vercel app.
 POKINEX_VERCEL_ORIGIN = re.compile(
-    r"^https://pokinex(?:-git-[a-z0-9][a-z0-9-]*-kael-xd-ev)?\.vercel\.app$"
+    r"^https://(?:pokinex|pokinex-chat)(?:-git-[a-z0-9][a-z0-9-]*-kael-xd-ev)?\.vercel\.app$"
 )
 
 
