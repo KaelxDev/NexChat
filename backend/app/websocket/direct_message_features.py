@@ -46,7 +46,7 @@ def get_direct_message_history(user_id, other_user_id, limit=50, before=None):
                    su.username AS sender_username, su.display_name AS sender_display_name, su.avatar AS sender_avatar,
                    ru.username AS recipient_username, ru.display_name AS recipient_display_name, ru.avatar AS recipient_avatar,
                    rm.message AS reply_message, rm.deleted_at AS reply_deleted_at,
-                   rsu.username AS reply_username, rsu.display_name AS reply_display_name, rsu.avatar AS reply_avatar
+                   rsu.id AS reply_user_id, rsu.username AS reply_username, rsu.display_name AS reply_display_name, rsu.avatar AS reply_avatar
             FROM direct_messages dm
             JOIN users su ON su.id = dm.sender_id
             JOIN users ru ON ru.id = dm.recipient_id
@@ -81,8 +81,8 @@ def get_direct_message_history(user_id, other_user_id, limit=50, before=None):
             }
             if row["reply_to_message_id"] and row["reply_username"]:
                 item["replyTo"] = {
-                    "messageId": row["reply_to_message_id"], "username": row["reply_username"], "displayName": row["reply_display_name"],
-                    "avatar": _persistent_avatar_reference(connection, row["sender_id"], row["reply_avatar"]),
+                    "messageId": row["reply_to_message_id"], "userId": row["reply_user_id"], "username": row["reply_username"], "displayName": row["reply_display_name"],
+                    "avatar": _persistent_avatar_reference(connection, row["reply_user_id"], row["reply_avatar"]),
                     "message": "Esta mensagem foi excluída" if row["reply_deleted_at"] else row["reply_message"],
                     "deleted": bool(row["reply_deleted_at"]),
                 }
@@ -95,13 +95,12 @@ def get_direct_message_history(user_id, other_user_id, limit=50, before=None):
 def _save_direct_message(message_id, sender_id, recipient_id, message, created_at, reply_to_message_id=None):
     connection = get_connection()
     try:
-        query = (
-            "INSERT INTO direct_messages (message_id, sender_id, recipient_id, message, created_at, reply_to_message_id) VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (message_id) DO NOTHING"
-            if using_postgres() else
-            "INSERT OR IGNORE INTO direct_messages (message_id, sender_id, recipient_id, message, created_at, reply_to_message_id) VALUES (?, ?, ?, ?, ?, ?)"
-        )
+        query = ("INSERT INTO direct_messages (message_id, sender_id, recipient_id, message, created_at, reply_to_message_id) VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (message_id) DO NOTHING" if using_postgres() else "INSERT OR IGNORE INTO direct_messages (message_id, sender_id, recipient_id, message, created_at, reply_to_message_id) VALUES (?, ?, ?, ?, ?, ?)")
         connection.execute(query, (message_id, sender_id, recipient_id, message, created_at, reply_to_message_id))
         connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
     finally:
         connection.close()
 
@@ -145,8 +144,12 @@ async def send_direct_message(manager, sender_user, recipient_id, message, messa
     if reply_to_message_id:
         reply = await to_thread.run_sync(_direct_message_payload, reply_to_message_id)
         if reply:
-            event["replyTo"] = {"messageId":reply["messageId"],"username":reply["username"],"displayName":reply["displayName"],"avatar":reply["avatar"],"message":reply["message"],"deleted":reply["deleted"]}
-    await _send_to_pair(manager, event, sender_user["id"], recipient_id)
+            event["replyTo"] = {"messageId":reply["messageId"],"userId":reply["senderId"],"username":reply["username"],"displayName":reply["displayName"],"avatar":reply["avatar"],"message":reply["message"],"deleted":reply["deleted"]}
+    for websocket, current in _pair_users(manager, sender_user["id"], recipient_id):
+        try:
+            await websocket.send_json({**event, "notifyRecipient": int(current["id"]) == recipient_id})
+        except Exception:
+            manager.active_connections.pop(websocket, None)
     if sender and message_id:
         await sender.send_json({"type":"direct_ack","messageId":message_id})
 
