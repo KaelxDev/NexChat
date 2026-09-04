@@ -27,6 +27,11 @@ function playNotificationSound() {
   }
 }
 
+function resolveNotificationAvatar(message, userId) {
+  const candidate = String(message?.avatar || "").trim() || `/api/auth/avatar/${encodeURIComponent(userId)}`;
+  return normalizeAvatarUrl(candidate, userId);
+}
+
 export default function DirectMessageNotifier() {
   const [toast, setToast] = useState(null);
 
@@ -41,7 +46,7 @@ export default function DirectMessageNotifier() {
         senderId,
         userId: senderId,
         displayName,
-        avatar: normalizeAvatarUrl(message?.avatar, senderId),
+        avatar: resolveNotificationAvatar(message, senderId),
       };
 
       setToast(normalized);
@@ -100,6 +105,9 @@ export default function DirectMessageNotifier() {
       aria-label={`Abrir conversa com ${toast.displayName}`}
     >
       <span className="dm-notification-avatar">
+        <span className="dm-notification-avatar-fallback" aria-hidden="true">
+          {userInitial(toast)}
+        </span>
         {toast.avatar ? (
           <img
             src={toast.avatar}
@@ -108,9 +116,7 @@ export default function DirectMessageNotifier() {
               event.currentTarget.style.display = "none";
             }}
           />
-        ) : (
-          userInitial(toast)
-        )}
+        ) : null}
       </span>
       <span className="dm-notification-copy">
         <small>MENSAGEM PRIVADA</small>
