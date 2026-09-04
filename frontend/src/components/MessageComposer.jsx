@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import EmojiPicker from "./EmojiPicker";
+import EmojiPicker from "./EmojiPickerExtra";
 
 export default function MessageComposer({ connected, offlineQueueLength, replyingTo, messageInput, onChange, onSubmit, onCancelReply }) {
   const textareaRef = useRef(null);
