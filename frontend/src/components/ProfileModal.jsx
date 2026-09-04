@@ -4,6 +4,7 @@ export default function ProfileModal({
   open,
   user,
   profile,
+  avatarPreview = "",
   profileError,
   profileSaving,
   onClose,
@@ -13,7 +14,7 @@ export default function ProfileModal({
   if (!open) return null;
 
   const displayName = profile?.displayName || user?.displayName || user?.username || "Usuário";
-  const avatar = normalizeAvatarUrl(profile?.avatar || user?.avatar, user?.id);
+  const avatar = avatarPreview || normalizeAvatarUrl(profile?.avatar || user?.avatar, user?.id);
 
   return (
     <div
@@ -26,7 +27,7 @@ export default function ProfileModal({
         <h2>👤 Meu perfil</h2>
         <div className="profile-preview">
           <div className="avatar profile-avatar profile-preview-avatar">
-            {avatar ? <img src={avatar} alt="" /> : displayName.slice(0, 1).toUpperCase()}
+            {avatar ? <img src={avatar} alt="Pré-visualização do avatar" /> : displayName.slice(0, 1).toUpperCase()}
           </div>
           <div>
             <strong>@{user.username}</strong>
@@ -48,6 +49,7 @@ export default function ProfileModal({
             hidden
           />
           <span>PNG, JPG, GIF ou WebP • até 2 MB</span>
+          {avatarPreview && <small>Nova foto selecionada. Clique em “Salvar perfil”.</small>}
         </div>
 
         <label>
