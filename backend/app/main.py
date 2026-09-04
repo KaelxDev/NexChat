@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from app.auth import get_user_from_token
 from app.database import close_db_pool, init_db_pool, initialize_database
+from app.moderation_bot import BOT_USER, moderation_bot
 from app.routes.auth import router as auth_router
 from app.routes.messages import router as messages_router
 from app.security import ALLOWED_ORIGINS, is_allowed_origin
@@ -95,6 +96,56 @@ async def _send_validation_error(websocket: WebSocket, action: str, error: Valid
     })
 
 
+async def _send_users_with_bot():
+    users = [{
+        "id": BOT_USER["id"],
+        "username": BOT_USER["username"],
+        "displayName": BOT_USER["displayName"],
+        "avatar": BOT_USER["avatar"],
+        "status": BOT_USER["status"],
+        "online": True,
+    }]
+    seen = {BOT_USER["id"]}
+
+    for user in manager.active_connections.values():
+        if user["id"] in seen:
+            continue
+        seen.add(user["id"])
+        users.append({
+            "id": user["id"],
+            "username": user["username"],
+            "displayName": user["displayName"],
+            "avatar": user["avatar"],
+            "status": user["status"],
+            "online": True,
+        })
+
+    await manager.broadcast({
+        "type": "users",
+        "users": users,
+        "timestamp": manager.get_timestamp(),
+    })
+
+
+async def _send_bot_message(message: str):
+    manager.sequence += 1
+    await manager.broadcast({
+        "type": "message",
+        "messageId": None,
+        "userId": BOT_USER["id"],
+        "username": BOT_USER["username"],
+        "displayName": BOT_USER["displayName"],
+        "avatar": BOT_USER["avatar"],
+        "status": BOT_USER["status"],
+        "message": message,
+        "timestamp": manager.get_timestamp(),
+        "sequence": manager.sequence,
+    })
+
+
+manager.send_users = _send_users_with_bot
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     if not await _validate_websocket_origin(websocket):
@@ -130,6 +181,26 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
                 message = event.message.strip()
                 if message:
+                    command_response = moderation_bot.command(message)
+                    if command_response:
+                        await _send_bot_message(command_response)
+                        if event.messageId:
+                            await websocket.send_json({"type": "ack", "messageId": event.messageId})
+                        continue
+
+                    moderation = moderation_bot.moderate(message)
+                    if not moderation.allowed:
+                        await websocket.send_json({
+                            "type": "moderation",
+                            "action": "blocked",
+                            "message": moderation.reason,
+                        })
+                        if moderation.bot_message:
+                            await _send_bot_message(moderation.bot_message)
+                        if event.messageId:
+                            await websocket.send_json({"type": "ack", "messageId": event.messageId})
+                        continue
+
                     await manager.send_message(user, message, event.messageId, websocket, event.replyTo)
                 continue
 
