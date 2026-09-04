@@ -30,30 +30,37 @@ export default function MessageList({
   const showEmptyState = !historyLoading && messages.length === 0;
 
   return (
-    <div className="messages" ref={messagesRef} onScroll={onScroll}>
+    <div
+      className={`messages${showEmptyState ? " messages-empty" : ""}`}
+      ref={messagesRef}
+      onScroll={onScroll}
+    >
       {historyLoading && (
-        <div
-          className="history-loading"
-          role="status"
-          style={{ padding: "8px 0", textAlign: "center", opacity: 0.7, fontSize: "13px" }}
-        >
-          Carregando mensagens anteriores...
+        <div className="history-loading" role="status">
+          <span className="empty-chat-spinner" aria-hidden="true" />
+          <span>Carregando mensagens...</span>
         </div>
       )}
 
       {showEmptyState && (
-        <div className="chat-empty-state">
+        <section className="chat-empty-state" aria-label="Conversa vazia">
           <div className="chat-empty-icon">
             <img src="/icone.png?v=2" alt="" />
+            <span className="chat-empty-icon-ring" aria-hidden="true" />
           </div>
+          <div className="chat-empty-kicker">CANAL PÚBLICO · #GERAL</div>
           <h2>Comece a conversa</h2>
           <p>
-            Este é o canal <strong>#geral</strong>. Envie a primeira mensagem e ela aparecerá aqui em tempo real.
+            Este é o início do canal <strong>#geral</strong>.<br />
+            Envie a primeira mensagem para começar a conversar em tempo real.
           </p>
-          <span className="chat-empty-hint">
-            {connected ? "Conexão ativa · você pode enviar agora" : "Sem conexão · sua mensagem será colocada na fila"}
-          </span>
-        </div>
+          <div className="chat-empty-status">
+            <span className={`chat-empty-status-dot ${connected ? "online" : "offline"}`} />
+            <span>{connected ? "Conexão ativa" : "Aguardando conexão"}</span>
+            <span className="chat-empty-status-separator">•</span>
+            <span>Suas mensagens aparecerão aqui</span>
+          </div>
+        </section>
       )}
 
       {messages.map((message, index) => {
@@ -94,11 +101,7 @@ export default function MessageList({
           >
             {!grouped ? (
               <div className="message-avatar">
-                {messageAvatar ? (
-                  <img src={messageAvatar} alt="" />
-                ) : (
-                  userInitial(messageProfile)
-                )}
+                {messageAvatar ? <img src={messageAvatar} alt="" /> : userInitial(messageProfile)}
               </div>
             ) : (
               <div className="message-avatar-spacer" aria-hidden="true" />
@@ -121,13 +124,8 @@ export default function MessageList({
                     rows={2}
                   />
                   <div>
-                    <button type="button" onClick={onCancelEdit} disabled={editSaving}>
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={editSaving || !editingText.trim()}
-                    >
+                    <button type="button" onClick={onCancelEdit} disabled={editSaving}>Cancelar</button>
+                    <button type="submit" disabled={editSaving || !editingText.trim()}>
                       {editSaving ? "Salvando..." : "Salvar"}
                     </button>
                   </div>
@@ -144,19 +142,11 @@ export default function MessageList({
                   >
                     {message.replyTo && (
                       <div className="reply-preview">
-                        <strong>
-                          ↩️ {message.replyTo.displayName || message.replyTo.username || "Mensagem"}
-                        </strong>
-                        <span>
-                          {message.replyTo.deleted
-                            ? "Esta mensagem foi excluída"
-                            : message.replyTo.message}
-                        </span>
+                        <strong>↩️ {message.replyTo.displayName || message.replyTo.username || "Mensagem"}</strong>
+                        <span>{message.replyTo.deleted ? "Esta mensagem foi excluída" : message.replyTo.message}</span>
                       </div>
                     )}
-                    <div
-                      className={`message-bubble-wrap ${message.deleted ? "message-deleted" : ""}`}
-                    >
+                    <div className={`message-bubble-wrap ${message.deleted ? "message-deleted" : ""}`}>
                       <div className="message-bubble">
                         {message.deleted ? "🗑️ Esta mensagem foi excluída" : message.message}
                       </div>
@@ -164,46 +154,24 @@ export default function MessageList({
                   </div>
 
                   {!message.deleted && (
-                    <div
-                      className="message-reaction-area"
-                      onClick={(event) => event.stopPropagation()}
-                    >
+                    <div className="message-reaction-area" onClick={(event) => event.stopPropagation()}>
                       <div className="message-reactions">
                         {visibleReactions.map((reaction) => (
-                          <button
-                            key={reaction}
-                            className="message-reaction"
-                            type="button"
-                            onClick={() => onReaction(message.messageId, reaction)}
-                            title="Alternar reação"
-                          >
+                          <button key={reaction} className="message-reaction" type="button" onClick={() => onReaction(message.messageId, reaction)} title="Alternar reação">
                             {reaction} {reactionCounts[reaction]}
                           </button>
                         ))}
                         {connected && (
-                          <button
-                            className="add-reaction"
-                            type="button"
-                            onClick={(event) => onToggleReactionPicker(event, message.messageId)}
-                          >
+                          <button className="add-reaction" type="button" onClick={(event) => onToggleReactionPicker(event, message.messageId)}>
                             ＋ Reagir
                           </button>
                         )}
                       </div>
 
                       {reactionPickerMessageId === message.messageId && (
-                        <div
-                          className="message-reaction-picker"
-                          onClick={(event) => event.stopPropagation()}
-                        >
+                        <div className="message-reaction-picker" onClick={(event) => event.stopPropagation()}>
                           {REACTION_OPTIONS.map((reaction) => (
-                            <button
-                              key={reaction}
-                              type="button"
-                              onClick={() => onReaction(message.messageId, reaction)}
-                              aria-label={`Reagir com ${reaction}`}
-                              title={`Reagir com ${reaction}`}
-                            >
+                            <button key={reaction} type="button" onClick={() => onReaction(message.messageId, reaction)} aria-label={`Reagir com ${reaction}`} title={`Reagir com ${reaction}`}>
                               {reaction}
                             </button>
                           ))}
@@ -214,13 +182,7 @@ export default function MessageList({
 
                   {groupEnd && (
                     <div className="message-meta">
-                      <span
-                        className={
-                          message.deliveryStatus === "pending" || message.offline
-                            ? "message-pending"
-                            : ""
-                        }
-                      >
+                      <span className={message.deliveryStatus === "pending" || message.offline ? "message-pending" : ""}>
                         {formatTime(message.timestamp)} • {message.deletePending
                           ? "◌ Excluindo"
                           : message.editPending
@@ -230,9 +192,7 @@ export default function MessageList({
                               : message.deliveryStatus === "sending"
                                 ? "◌ Enviando"
                                 : "✓ Enviada"}
-                        {message.edited && !message.editPending && !message.deleted
-                          ? " • editada"
-                          : ""}
+                        {message.edited && !message.editPending && !message.deleted ? " • editada" : ""}
                       </span>
                     </div>
                   )}
