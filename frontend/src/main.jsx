@@ -23,16 +23,13 @@ import './ConversationViewportFix.css'
 import './MessagePresentationFix.css'
 import './MessageAvatarFix.css'
 import './MessageFlowFix.css'
-import MobileSidebar from './MobileSidebar.jsx'
 import AutoMessageScroll from './AutoMessageScroll.jsx'
 import AppEdit from './AppEdit.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <MobileSidebar>
-      <AutoMessageScroll>
-        <AppEdit />
-      </AutoMessageScroll>
-    </MobileSidebar>
+    <AutoMessageScroll>
+      <AppEdit />
+    </AutoMessageScroll>
   </StrictMode>,
 )
