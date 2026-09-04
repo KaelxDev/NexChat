@@ -10,7 +10,8 @@ from pydantic import ValidationError
 
 from app.auth import get_user_from_token
 from app.database import close_db_pool, init_db_pool, initialize_database
-from app.moderation_bot import BOT_USER, moderation_bot
+from app.moderation_bot import BOT_USER, is_moderator, moderation_bot
+from app.moderation_store import clear_recent_messages
 from app.routes.auth import router as auth_router
 from app.routes.messages import router as messages_router
 from app.security import ALLOWED_ORIGINS, is_allowed_origin
@@ -104,6 +105,7 @@ async def _send_users_with_bot():
         "avatar": BOT_USER["avatar"],
         "status": BOT_USER["status"],
         "online": True,
+        "role": "bot",
     }]
     seen = {BOT_USER["id"]}
 
@@ -118,6 +120,7 @@ async def _send_users_with_bot():
             "avatar": user["avatar"],
             "status": user["status"],
             "online": True,
+            "role": "moderator" if is_moderator(user) else "member",
         })
 
     await manager.broadcast({
@@ -129,18 +132,147 @@ async def _send_users_with_bot():
 
 async def _send_bot_message(message: str):
     manager.sequence += 1
+    bot_message_id = f"bot-{manager.sequence}-{manager.get_timestamp()}"
     await manager.broadcast({
         "type": "message",
-        "messageId": None,
+        "messageId": bot_message_id,
         "userId": BOT_USER["id"],
         "username": BOT_USER["username"],
         "displayName": BOT_USER["displayName"],
         "avatar": BOT_USER["avatar"],
         "status": BOT_USER["status"],
+        "role": "bot",
         "message": message,
         "timestamp": manager.get_timestamp(),
         "sequence": manager.sequence,
     })
+
+
+def _find_online_user(username: str):
+    normalized = username.casefold()
+    for user in manager.active_connections.values():
+        if str(user.get("username", "")).casefold() == normalized:
+            return user
+    return None
+
+
+def _command_args(message: str):
+    return message.strip().split()
+
+
+async def _moderation_command(websocket: WebSocket, user, message: str) -> bool:
+    if not message.startswith("!"):
+        return False
+
+    command = moderation_bot.command_name(message)
+    public_response = moderation_bot.public_command(message)
+    if public_response:
+        await _send_bot_message(public_response)
+        return True
+
+    moderator = is_moderator(user)
+    if command == "!mod":
+        if not moderator:
+            await _send_bot_message("🔒 O modo moderador está disponível apenas para a equipe autorizada.")
+            return True
+        args = _command_args(message)
+        if len(args) > 1 and args[1].casefold() == "help":
+            await websocket.send_json({"type": "moderator_session", "enabled": True})
+            await _send_bot_message(moderation_bot.MOD_HELP)
+        else:
+            await websocket.send_json({"type": "moderator_session", "enabled": True})
+            await _send_bot_message("🛡️ Modo moderador ativo. Use !mod help para ver os comandos administrativos.")
+        return True
+
+    if not moderator:
+        await _send_bot_message("❌ Comando não reconhecido. Use !help para ver os comandos públicos.")
+        return True
+
+    args = _command_args(message)
+
+    if command == "!clear":
+        amount = 50
+        if len(args) > 1:
+            try:
+                amount = int(args[1])
+            except ValueError:
+                await _send_bot_message("🧹 Use: !clear [1-100].")
+                return True
+        if amount < 1 or amount > 100:
+            await _send_bot_message("🧹 O limite do comando !clear é de 1 a 100 mensagens.")
+            return True
+        message_ids = await to_thread.run_sync(clear_recent_messages, amount)
+        await manager.broadcast({
+            "type": "messages_cleared",
+            "messageIds": message_ids,
+            "count": len(message_ids),
+            "moderator": user["username"],
+            "timestamp": manager.get_timestamp(),
+        })
+        await _send_bot_message(f"🧹 {len(message_ids)} mensagem(ns) removida(s) do #geral.")
+        return True
+
+    if command in {"!warn", "!mute", "!unmute", "!kick"}:
+        if len(args) < 2:
+            await _send_bot_message(f"Use: {command} @usuário ...")
+            return True
+
+        target_username = args[1].lstrip("@").casefold()
+        target = _find_online_user(target_username)
+        if not target:
+            await _send_bot_message(f"❌ Usuário @{target_username} não está online.")
+            return True
+        if target["id"] == user["id"]:
+            await _send_bot_message("❌ Essa ação não pode ser aplicada a você mesmo.")
+            return True
+        if target["id"] == BOT_USER["id"]:
+            await _send_bot_message("🤖 O PokiBot não pode ser moderado.")
+            return True
+
+        if is_moderator(target):
+            await _send_bot_message("🛡️ Moderadores não podem ser punidos por este conjunto de comandos.")
+            return True
+
+        if command == "!warn":
+            reason = " ".join(args[2:]).strip() or "Comportamento fora das regras do canal."
+            await _send_bot_message(f"⚠️ @{target['username']} recebeu um aviso: {reason}")
+            return True
+
+        if command == "!mute":
+            if len(args) < 3:
+                await _send_bot_message("🔇 Use: !mute @usuário [minutos].")
+                return True
+            try:
+                minutes = int(args[2])
+            except ValueError:
+                await _send_bot_message("🔇 Os minutos precisam ser um número.")
+                return True
+            if minutes < 1 or minutes > 1440:
+                await _send_bot_message("🔇 O mute pode durar de 1 a 1440 minutos.")
+                return True
+            moderation_bot.mute(target["id"], minutes)
+            await _send_bot_message(f"🔇 @{target['username']} foi silenciado por {minutes} minuto(s).")
+            return True
+
+        if command == "!unmute":
+            moderation_bot.unmute(target["id"])
+            await _send_bot_message(f"🔊 @{target['username']} foi dessilenciado.")
+            return True
+
+        if command == "!kick":
+            await _send_bot_message(f"👢 @{target['username']} foi removido do #geral por um moderador.")
+            for target_socket, current in list(manager.active_connections.items()):
+                if current["id"] == target["id"]:
+                    try:
+                        await target_socket.close(code=4003, reason="Removido por um moderador")
+                    except Exception:
+                        pass
+                    manager.active_connections.pop(target_socket, None)
+            await manager.send_users()
+            return True
+
+    await _send_bot_message(moderation_bot.MOD_HELP)
+    return True
 
 
 manager.send_users = _send_users_with_bot
@@ -157,6 +289,7 @@ async def websocket_endpoint(websocket: WebSocket):
         return
 
     await manager.connect(websocket, user)
+    await websocket.send_json({"type": "moderator_session", "enabled": is_moderator(user)})
     try:
         while True:
             raw_data = await websocket.receive_text()
@@ -181,13 +314,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
                 message = event.message.strip()
                 if message:
-                    command_response = moderation_bot.command(message)
-                    if command_response:
-                        await _send_bot_message(command_response)
-                        if event.messageId:
-                            await websocket.send_json({"type": "ack", "messageId": event.messageId})
+                    if await _moderation_command(websocket, user, message):
                         continue
-
+                    if not is_moderator(user) and moderation_bot.is_muted(user["id"]):
+                        await websocket.send_json({
+                            "type": "moderation",
+                            "action": "muted",
+                            "message": "Você está silenciado no #geral no momento.",
+                        })
+                        continue
                     moderation = moderation_bot.moderate(message)
                     if not moderation.allowed:
                         await websocket.send_json({
